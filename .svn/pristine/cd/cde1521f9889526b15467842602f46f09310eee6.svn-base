@@ -1,0 +1,252 @@
+object Frm_FilterKeuangan: TFrm_FilterKeuangan
+  Left = 491
+  Top = 222
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'Periode'
+  ClientHeight = 155
+  ClientWidth = 389
+  Color = clBtnFace
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Myriad Pro'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  PixelsPerInch = 96
+  TextHeight = 16
+  object RzLabel2: TRzLabel
+    Left = 8
+    Top = 56
+    Width = 30
+    Height = 15
+    Caption = 'Dari :'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object RzLabel3: TRzLabel
+    Left = 8
+    Top = 84
+    Width = 44
+    Height = 15
+    Caption = 'Hingga :'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object RzLabel4: TRzLabel
+    Left = 72
+    Top = 32
+    Width = 32
+    Height = 15
+    Caption = 'Bulan'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object RzLabel5: TRzLabel
+    Left = 248
+    Top = 32
+    Width = 33
+    Height = 15
+    Caption = 'Tahun'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object RzPanel1: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 389
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Periode'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 4
+  end
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 117
+    Width = 389
+    Height = 38
+    Align = alBottom
+    BorderOuter = fsNone
+    BorderSides = [sdTop]
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 5
+    DesignSize = (
+      389
+      38)
+    object BtnOk: TRzBitBtn
+      Left = 304
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Ok'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnOkClick
+    end
+    object BtnBatal: TRzBitBtn
+      Left = 224
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Batal'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnBatalClick
+    end
+  end
+  object cbtahun1: TRzComboBox
+    Left = 248
+    Top = 53
+    Width = 129
+    Height = 23
+    Style = csDropDownList
+    Ctl3D = False
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    FrameHotTrack = True
+    FrameVisible = True
+    ItemHeight = 15
+    ParentCtl3D = False
+    ParentFont = False
+    TabOnEnter = True
+    TabOrder = 1
+  end
+  object cbbulandari: TRzComboBox
+    Left = 72
+    Top = 53
+    Width = 169
+    Height = 23
+    Style = csDropDownList
+    Ctl3D = False
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    FrameHotTrack = True
+    FrameVisible = True
+    ItemHeight = 15
+    ParentCtl3D = False
+    ParentFont = False
+    TabOnEnter = True
+    TabOrder = 0
+    Items.Strings = (
+      'Januari'
+      'Februari'
+      'Maret'
+      'April'
+      'Mei'
+      'Juni'
+      'Juli'
+      'Agustus'
+      'September'
+      'Oktober'
+      'November'
+      'Desember')
+  end
+  object cbtahunhingga: TRzComboBox
+    Left = 248
+    Top = 81
+    Width = 129
+    Height = 23
+    Style = csDropDownList
+    Ctl3D = False
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    FrameHotTrack = True
+    FrameVisible = True
+    ItemHeight = 15
+    ParentCtl3D = False
+    ParentFont = False
+    TabOnEnter = True
+    TabOrder = 3
+  end
+  object cbbulanhingga: TRzComboBox
+    Left = 72
+    Top = 81
+    Width = 169
+    Height = 23
+    Style = csDropDownList
+    Ctl3D = False
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    FrameHotTrack = True
+    FrameVisible = True
+    ItemHeight = 15
+    ParentCtl3D = False
+    ParentFont = False
+    TabOnEnter = True
+    TabOrder = 2
+    Items.Strings = (
+      'Januari'
+      'Februari'
+      'Maret'
+      'April'
+      'Mei'
+      'Juni'
+      'Juli'
+      'Agustus'
+      'September'
+      'Oktober'
+      'November'
+      'Desember')
+  end
+  object QBarang: TZQuery
+    Connection = DM.con
+    SQL.Strings = (
+      'select * from tbl_barang where status=1 order by namabarang')
+    Params = <>
+    Left = 328
+    Top = 8
+  end
+end

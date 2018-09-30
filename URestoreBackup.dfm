@@ -1,0 +1,111 @@
+object Frm_RestoreBackup: TFrm_RestoreBackup
+  Left = 192
+  Top = 116
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'Restore Backup'
+  ClientHeight = 138
+  ClientWidth = 453
+  Color = clBtnFace
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel1: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 453
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Restore Backup'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 0
+  end
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 97
+    Width = 453
+    Height = 41
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 1
+    object BtnBatal: TRzBitBtn
+      Left = 273
+      Top = 8
+      Caption = 'Batal'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnBatalClick
+    end
+    object BtnOk: TRzBitBtn
+      Left = 356
+      Top = 8
+      Caption = 'Lanjutkan'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnOkClick
+    end
+  end
+  object RzGroupBox1: TRzGroupBox
+    Left = 0
+    Top = 25
+    Width = 453
+    Height = 72
+    Align = alClient
+    Caption = 'File Backup yang Akan di Restore'
+    GroupStyle = gsUnderline
+    TabOrder = 2
+    object RzLabel1: TRzLabel
+      Left = 32
+      Top = 35
+      Width = 119
+      Height = 15
+      Caption = 'Lokasi Penyimpanan :'
+    end
+    object txtlokasi: TRzButtonEdit
+      Left = 160
+      Top = 32
+      Width = 270
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOrder = 0
+      AllowKeyEdit = False
+      OnButtonClick = txtlokasiButtonClick
+    end
+  end
+  object OpenDialog1: TRzOpenDialog
+    HotTrack = True
+    Title = 'Restore Backup'
+    Filter = 'SQL Script|*.sql'
+    InitialDir = 'Desktop'
+    Left = 280
+    Top = 8
+  end
+end

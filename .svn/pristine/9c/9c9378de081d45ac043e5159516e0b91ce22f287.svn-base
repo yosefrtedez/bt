@@ -1,0 +1,367 @@
+unit UCetakCSV;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, cxPC, NxColumnClasses, NxColumns, NxScrollControl,
+  NxCustomGridControl, NxCustomGrid, NxGrid, DB, ZAbstractRODataset,
+  ZAbstractDataset, ZDataset, RzButton, ExtCtrls, RzPanel, DateUtils;
+
+type
+  TFrm_DaftarCetakCSV = class(TForm)
+    RzPanel1: TRzPanel;
+    BtnUpdate: TRzToolButton;
+    BtnFilter: TRzToolButton;
+    RzPanel2: TRzPanel;
+    BtnSelesai: TRzBitBtn;
+    BtnPerincian: TRzBitBtn;
+    BtnCSV: TRzBitBtn;
+    BtnCheck: TRzBitBtn;
+    QData: TZQuery;
+    DSData: TDataSource;
+    Q1: TZQuery;
+    dbgdata: TNextGrid;
+    NxTextColumn1: TNxTextColumn;
+    NxTextColumn2: TNxTextColumn;
+    NxTextColumn3: TNxTextColumn;
+    NxNumberColumn1: TNxNumberColumn;
+    NxNumberColumn2: TNxNumberColumn;
+    NxCheckBoxColumn1: TNxCheckBoxColumn;
+    NxNumberColumn3: TNxNumberColumn;
+    NxTextColumn4: TNxTextColumn;
+    NxNumberColumn4: TNxNumberColumn;
+    NxNumberColumn5: TNxNumberColumn;
+    BtnUncheck: TRzBitBtn;
+    QDatanopenjualan: TLargeintField;
+    QDatakodepenjualan: TStringField;
+    QDatakodefaktur: TStringField;
+    QDatatipe: TStringField;
+    QDatatgltransaksi: TDateField;
+    QDatanokontak: TLargeintField;
+    QDatatotaldpp: TFloatField;
+    QDatatotalppn: TFloatField;
+    QDatanamakontak: TStringField;
+    NxTextColumn5: TNxTextColumn;
+    BtnVariabel: TRzBitBtn;
+    QDatanopenjualankirim: TLargeintField;
+    QDatakodepenjualankirim: TStringField;
+    QDatanopenjualanorder: TStringField;
+    QDatakodepenjualanorder: TStringField;
+    QDatakodepenjualando: TStringField;
+    NxTextColumn6: TNxTextColumn;
+    procedure BtnSelesaiClick(Sender: TObject);
+    procedure BtnUpdateClick(Sender: TObject);
+    procedure BtnCSVClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure BtnCheckClick(Sender: TObject);
+    procedure BtnUncheckClick(Sender: TObject);
+    procedure BtnFilterClick(Sender: TObject);
+    procedure BtnPerincianClick(Sender: TObject);
+    procedure BtnVariabelClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure RefreshQ;
+    function CheckMark:Boolean;
+    function HitungCheckMark:Integer;
+  end;
+
+var
+  Frm_DaftarCetakCSV: TFrm_DaftarCetakCSV;
+  datedari,datesampai:string;
+  centang: Boolean;
+  statuscsv: Integer;
+
+implementation
+
+uses UDM, UMain, UFTanggalCSV, NxCells, RzCmboBx, UInputFakturPajak;
+
+{$R *.dfm}
+
+procedure TFrm_DaftarCetakCSV.BtnSelesaiClick(Sender: TObject);
+var
+   ts: TcxTabSheet;
+begin
+   ts := (Self.parent as TcxTabSheet);
+   Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_DaftarCetakCSV.RefreshQ;
+var
+  i: Integer;
+begin
+  Screen.Cursor := crSQLWait;
+  with QData do begin
+    Close;
+    if statuscsv = 0 then begin
+      SQL.Clear;
+      SQL.Text := 'SELECT a.*,IFNULL(b.namakontak,'+QuotedStr('')+')AS namakontak FROM ' +
+                  '(SELECT a.*,IFNULL(b.kodepenjualanorder,'+QuotedStr('')+')AS kodepenjualanorder,IFNULL(b.kodepenjualando,'+QuotedStr('')+')AS kodepenjualando FROM ' +
+                  '(SELECT a.*,IFNULL(b.kodepenjualankirim,'+QuotedStr('')+')AS kodepenjualankirim,IFNULL(b.nopenjualanorder,'+QuotedStr('')+')AS nopenjualanorder FROM ' +
+                  '(SELECT a.* FROM ' +
+                  '(SELECT nopenjualaninvoice AS nopenjualan,kodepenjualaninvoice AS kodepenjualan,kodefaktur,nopenjualankirim,'+QuotedStr('SA')+' AS tipe,tglpenjualaninvoice AS tgltransaksi,nokontak,totaldpp,totalppn FROM tbl_penjualaninvoice ' +
+                  'UNION ' +
+                  'SELECT nopenjualantunai AS nopenjualan,kodepenjualantunai AS kodepenjualan,kodefaktur,0 as nopenjualankirim,'+QuotedStr('SP')+' AS tipe,tgltransaksi,nokontak,totaldpp,totalpajak AS totalppn FROM tbl_penjualantunai)AS a ' +
+                  'WHERE a.tgltransaksi BETWEEN :tkd AND :tks and kodefaktur='+QuotedStr('')+')AS a ' +
+                  'LEFT JOIN tbl_penjualankirim AS b ON b.nopenjualankirim=a.nopenjualankirim)AS a ' +
+                  'LEFT JOIN tbl_penjualanorder AS b ON b.nopenjualanorder=a.nopenjualanorder)AS a ' +
+                  'LEFT JOIN tbl_kontak AS b ON b.nokontak=a.nokontak ' +
+                  'ORDER BY a.tgltransaksi,a.kodepenjualan';
+    end else if statuscsv = 1 then begin
+      SQL.Clear;
+      SQL.Text := 'SELECT a.*,IFNULL(b.namakontak,'+QuotedStr('')+')AS namakontak FROM ' +
+                  '(SELECT a.*,IFNULL(b.kodepenjualanorder,'+QuotedStr('')+')AS kodepenjualanorder,IFNULL(b.kodepenjualando,'+QuotedStr('')+')AS kodepenjualando FROM ' +
+                  '(SELECT a.*,IFNULL(b.kodepenjualankirim,'+QuotedStr('')+')AS kodepenjualankirim,IFNULL(b.nopenjualanorder,'+QuotedStr('')+')AS nopenjualanorder FROM ' +
+                  '(SELECT a.* FROM ' +
+                  '(SELECT nopenjualaninvoice AS nopenjualan,kodepenjualaninvoice AS kodepenjualan,kodefaktur,nopenjualankirim,'+QuotedStr('SA')+' AS tipe,tglpenjualaninvoice AS tgltransaksi,nokontak,totaldpp,totalppn FROM tbl_penjualaninvoice ' +
+                  'UNION ' +
+                  'SELECT nopenjualantunai AS nopenjualan,kodepenjualantunai AS kodepenjualan,kodefaktur,0 as nopenjualankirim,'+QuotedStr('SP')+' AS tipe,tgltransaksi,nokontak,totaldpp,totalpajak AS totalppn FROM tbl_penjualantunai)AS a ' +
+                  'WHERE a.tgltransaksi BETWEEN :tkd AND :tks and kodefaktur<>'+QuotedStr('')+')AS a ' +
+                  'LEFT JOIN tbl_penjualankirim AS b ON b.nopenjualankirim=a.nopenjualankirim)AS a ' +
+                  'LEFT JOIN tbl_penjualanorder AS b ON b.nopenjualanorder=a.nopenjualanorder)AS a ' +
+                  'LEFT JOIN tbl_kontak AS b ON b.nokontak=a.nokontak ' +
+                  'ORDER BY a.tgltransaksi,a.kodepenjualan';
+    end else if statuscsv = 2 then begin
+      SQL.Clear;
+      SQL.Text := 'SELECT a.*,IFNULL(b.namakontak,'+QuotedStr('')+')AS namakontak FROM ' +
+                  '(SELECT a.*,IFNULL(b.kodepenjualanorder,'+QuotedStr('')+')AS kodepenjualanorder,IFNULL(b.kodepenjualando,'+QuotedStr('')+')AS kodepenjualando FROM ' +
+                  '(SELECT a.*,IFNULL(b.kodepenjualankirim,'+QuotedStr('')+')AS kodepenjualankirim,IFNULL(b.nopenjualanorder,'+QuotedStr('')+')AS nopenjualanorder FROM ' +
+                  '(SELECT a.* FROM ' +
+                  '(SELECT nopenjualaninvoice AS nopenjualan,kodepenjualaninvoice AS kodepenjualan,kodefaktur,nopenjualankirim,'+QuotedStr('SA')+' AS tipe,tglpenjualaninvoice AS tgltransaksi,nokontak,totaldpp,totalppn FROM tbl_penjualaninvoice ' +
+                  'UNION ' +
+                  'SELECT nopenjualantunai AS nopenjualan,kodepenjualantunai AS kodepenjualan,kodefaktur,0 as nopenjualankirim,'+QuotedStr('SP')+' AS tipe,tgltransaksi,nokontak,totaldpp,totalpajak AS totalppn FROM tbl_penjualantunai)AS a ' +
+                  'WHERE a.tgltransaksi BETWEEN :tkd AND :tks)AS a ' +
+                  'LEFT JOIN tbl_penjualankirim AS b ON b.nopenjualankirim=a.nopenjualankirim)AS a ' +
+                  'LEFT JOIN tbl_penjualanorder AS b ON b.nopenjualanorder=a.nopenjualanorder)AS a ' +
+                  'LEFT JOIN tbl_kontak AS b ON b.nokontak=a.nokontak ' +
+                  'ORDER BY a.tgltransaksi,a.kodepenjualan';
+    end;
+    ParamByName('tkd').Value := datedari;
+    ParamByName('tks').Value := datesampai;
+    Open;
+    dbgdata.ClearRows;
+    First;
+    for i:=0 to RecordCount-1 do begin
+      dbgdata.AddRow();
+      dbgdata.Cell[0,i].AsBoolean := centang;
+      dbgdata.Cell[1,i].AsString := FieldValues['kodepenjualan'];
+      dbgdata.Cell[2,i].AsString := FieldValues['kodepenjualando'];
+      dbgdata.Cell[3,i].AsString := FormatDateTime('dd MMM yyyy',FieldValues['tgltransaksi']);
+      dbgdata.Cell[4,i].AsString := FieldValues['kodefaktur'];
+      dbgdata.Cell[5,i].AsString := FieldValues['namakontak'];
+      dbgdata.Cell[6,i].AsFloat := FieldValues['totaldpp'];
+      dbgdata.Cell[7,i].AsFloat := FieldValues['totalppn'];
+      dbgdata.Cell[8,i].AsInteger := FieldValues['nopenjualan'];
+      dbgdata.Cell[9,i].AsInteger := MonthOf(FieldValues['tgltransaksi']);
+      dbgdata.Cell[10,i].AsInteger := YearOf(FieldValues['tgltransaksi']);
+      dbgdata.Cell[11,i].AsString := FieldValues['tipe'];
+      Next;
+    end;
+  end;
+  Screen.Cursor := crDefault;
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnUpdateClick(Sender: TObject);
+begin
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnCSVClick(Sender: TObject);
+var
+  i,bulan,tahun,nopenj:integer;
+begin
+  if QData.IsEmpty then Exit;
+  if CheckMark = False then begin
+    MessageDlg('Belum ada data yang dipilih'#10#13'beri tanda Check Mark pada Grid untuk data yang akan diproses',mtWarning,[mbOK],0);
+    Exit;
+  end;
+  Q1.Close;
+  Q1.SQL.Clear;
+  Q1.SQL.Text := 'delete from tbl_penjualancsv';
+  Q1.ExecSQL;
+  for i:=0 to dbgdata.RowCount-1 do begin
+    if dbgdata.Cell[0,i].AsBoolean = True then begin
+      if dbgdata.Cell[4,i].AsString = '' then begin
+        MessageDlg('No. Invoice, '+dbgdata.Cell[1,i].AsString+' belum memiliki Nomor Faktur Pajak.',mtError,[mbOK],0);
+        Q1.Close;
+        Q1.SQL.Clear;
+        Q1.SQL.Text := 'delete from tbl_penjualancsv';
+        Q1.ExecSQL;
+        Exit;
+      end else begin
+        {Q1.Close;
+        Q1.SQL.Clear;
+        Q1.SQL.Text := 'SELECT a.noref FROM ' +
+                        '(SELECT nopenjualaninvoice AS noref,kodefaktur FROM tbl_penjualaninvoice ' +
+                        'UNION ALL ' +
+                        'SELECT nopenjualantunai AS noref,kodefaktur FROM tbl_penjualantunai)AS a WHERE kodefaktur=:np';
+        Q1.ParamByName('np').Value := dbgdata.Cell[4,i].AsString;
+        Q1.Open;
+        if Q1.IsEmpty then begin     }
+          if dbgdata.Cell[11,i].AsString = 'SA' then begin
+            Q1.Close;
+            Q1.SQL.Clear;
+            Q1.SQL.Text := 'update tbl_penjualaninvoice set kodefaktur=:a where nopenjualaninvoice=:np';
+            Q1.ParamByName('np').Value := dbgdata.Cell[8,i].AsInteger;
+            Q1.ParamByName('a').Value := dbgdata.Cell[4,i].AsString;
+            Q1.ExecSQL;
+          end else if dbgdata.Cell[11,i].AsString = 'SP' then begin
+            Q1.Close;
+            Q1.SQL.Clear;
+            Q1.SQL.Text := 'update tbl_penjualantunai set kodefaktur=:a where nopenjualantunai=:np';
+            Q1.ParamByName('np').Value := dbgdata.Cell[8,i].AsInteger;
+            Q1.ParamByName('a').Value := dbgdata.Cell[4,i].AsString;
+            Q1.ExecSQL;
+          end;
+          nopenj := dbgdata.Cell[8,i].AsInteger;
+          bulan := dbgdata.Cell[9,i].AsInteger;
+          tahun := dbgdata.Cell[10,i].AsInteger;
+          Q1.Close;
+          Q1.SQL.Clear;
+          Q1.SQL.Text := 'insert into tbl_penjualancsv values (:a,:b,:c,:d,:e,:f)';
+          Q1.ParamByName('a').Value := nopenj;
+          Q1.ParamByName('b').Value := '01';
+          Q1.ParamByName('c').Value := '0';
+          Q1.ParamByName('d').Value := bulan;
+          Q1.ParamByName('e').Value := tahun;
+          Q1.ParamByName('f').Value := dbgdata.Cell[11,i].AsString;
+          Q1.ExecSQL;
+        {end else begin
+          MessageDlg('No. Faktur Pajak, '+dbgdata.Cell[4,i].AsString+' telah dipakai!.',mtError,[mbOK],0);
+          Q1.Close;
+          Q1.SQL.Clear;
+          Q1.SQL.Text := 'delete from tbl_penjualancsv';
+          Q1.ExecSQL;
+          Exit;
+        end;  }
+      end;
+    end;
+  end;
+  DM.QPerusahaan.Close;
+  DM.QFakturKeluar.Close;
+  DM.QPerusahaan.Open;
+  DM.QFakturKeluar.Open;
+  DM.Rpt_FakturKeluar.ShowReport(True);
+  Q1.Close;
+  Q1.SQL.Clear;
+  Q1.SQL.Text := 'delete from tbl_penjualancsv';
+  Q1.ExecSQL;
+end;
+
+function TFrm_DaftarCetakCSV.CheckMark: Boolean;
+var
+  i:Integer;
+begin
+  Result := False;
+  for i:=0 to dbgdata.RowCount-1 do begin
+    if dbgdata.Cell[0,i].AsBoolean = True then begin
+      Result := True;
+      Exit;
+    end else Result := False;
+  end;
+end;
+
+procedure TFrm_DaftarCetakCSV.FormShow(Sender: TObject);
+begin
+  datedari := FormatDateTime('yyyy-mm-dd',DM.FDOM(Date));
+  datesampai := FormatDateTime('yyyy-mm-dd',DM.LastDayCurrMon(Date));
+  centang := False;
+  statuscsv := 0;
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnCheckClick(Sender: TObject);
+begin
+  centang := True;
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnUncheckClick(Sender: TObject);
+begin
+  centang := False;
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnFilterClick(Sender: TObject);
+begin
+  Application.CreateForm(TFTanggalCSV, FTanggalCSV);
+  with FTanggalCSV do begin
+    if ShowModal=mrok then begin
+      datedari := FormatDateTime('yyyy-mm-dd',FTanggalCSV.dtpdari.Date);
+      datesampai := FormatDateTime('yyyy-mm-dd',FTanggalCSV.dtpsampai.Date);
+      statuscsv := FTanggalCSV.cbstatus.ItemIndex;
+      RefreshQ;
+    end;
+  end;
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnPerincianClick(Sender: TObject);
+begin
+  {Application.CreateForm(TFrm_DataPenjualanDetil, Frm_DataPenjualanDetil);
+  Frm_DataPenjualanDetil.LNoPenjualan.Caption := dbgdata.Cell[7,dbgdata.SelectedRow].AsString;
+  Frm_DataPenjualanDetil.RefreshQ;
+  Frm_DataPenjualanDetil.ShowModal;      }
+end;
+
+procedure TFrm_DaftarCetakCSV.BtnVariabelClick(Sender: TObject);
+var
+  j,k:Integer;
+  i: Double;
+label
+  lompat;
+begin
+  Application.CreateForm(TFrm_Variabel, Frm_Variabel);
+  Frm_Variabel.ClearText;
+  Frm_Variabel.txtrange.IntValue := HitungCheckMark;
+  if Frm_Variabel.ShowModal = mrok then begin
+    Screen.Cursor := crSQLWait;
+    with TZQuery.Create(Self)do begin
+      Connection := dm.Con;
+      i:= StrToFloat(Frm_Variabel.txtkode.Text);
+      while (j <= Frm_Variabel.txtrange.IntValue) do begin
+        Close;
+        SQL.Clear;
+        SQL.Text := 'SELECT a.noref FROM ' +
+                    '(SELECT nopenjualaninvoice AS noref,kodefaktur FROM tbl_penjualaninvoice ' +
+                    'UNION ALL ' +
+                    'SELECT nopenjualantunai AS noref,kodefaktur FROM tbl_penjualantunai)AS a WHERE kodefaktur=:np';
+        ParamByName('np').Value := DM.GenerateKodeFaktur(i);
+        Open;
+        if IsEmpty then begin
+          for k:=0 to dbgdata.RowCount-1 do begin
+            if dbgdata.Cell[0,k].AsBoolean = True then begin
+              if dbgdata.Cell[4,k].AsString = '' then begin
+                dbgdata.Cell[4,k].AsString := DM.GenerateKodeFaktur(i);
+                goto lompat;
+              end;
+            end;
+          end;
+          lompat:
+          j := j+1
+        end;
+        i := i+1;
+      end;
+      Free;
+    end;
+    Screen.Cursor := crDefault;
+  end;
+end;
+
+function TFrm_DaftarCetakCSV.HitungCheckMark: Integer;
+var
+  i,total:Integer;
+begin
+  total := 0;
+  for i:=0 to dbgdata.RowCount-1 do begin
+    if dbgdata.Cell[0,i].AsBoolean = True then begin
+      if dbgdata.Cell[4,i].AsString = '' then begin
+        total := total+1;
+      end;
+    end;
+  end;
+  Result := total;
+end;
+
+end.

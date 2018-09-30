@@ -1,0 +1,137 @@
+unit UInputKelompokBarang;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Mask, RzEdit, RzButton, ExtCtrls, RzPanel, RzLabel,
+  RzBtnEdt, RzRadGrp, RzRadChk;
+
+type
+  TFrm_InputKelompokBarang = class(TForm)
+    LID: TRzLabel;
+    RzLabel1: TRzLabel;
+    RzLabel6: TRzLabel;
+    RzPanel1: TRzPanel;
+    RzPanel2: TRzPanel;
+    BtSave: TRzBitBtn;
+    BtnExit: TRzBitBtn;
+    txtnama: TRzEdit;
+    GBTipe: TRzRadioGroup;
+    GBAkun: TRzGroupBox;
+    RzLabel11: TRzLabel;
+    RzLabel15: TRzLabel;
+    LAkunHpp: TRzLabel;
+    LAkunPersediaan: TRzLabel;
+    txtakunhpp: TRzButtonEdit;
+    txtakunpersediaan: TRzButtonEdit;
+    procedure BtnExitClick(Sender: TObject);
+    procedure BtSaveClick(Sender: TObject);
+    procedure txtakunhppButtonClick(Sender: TObject);
+    procedure txtakunhppKeyPress(Sender: TObject; var Key: Char);
+    procedure txtakunpersediaanButtonClick(Sender: TObject);
+    procedure txtakunpersediaanKeyPress(Sender: TObject; var Key: Char);
+    procedure GBTipeClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure ClearText;
+  end;
+
+var
+  Frm_InputKelompokBarang: TFrm_InputKelompokBarang;
+
+implementation
+
+uses UDM, UDataAkun;
+
+{$R *.dfm}
+
+{ TFrm_InputKategoriMenu }
+
+procedure TFrm_InputKelompokBarang.ClearText;
+begin
+  LID.Caption := '0';
+  txtnama.Clear;
+  GBTipe.ItemIndex := 0;
+  GBTipeClick(nil);
+  txtakunhpp.Clear;
+  txtakunpersediaan.Clear;
+  LAkunHpp.Caption := '0';
+  LAkunPersediaan.Caption := '0';
+end;
+
+procedure TFrm_InputKelompokBarang.BtnExitClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFrm_InputKelompokBarang.BtSaveClick(Sender: TObject);
+begin
+  if txtnama.Text = '' then begin
+    MessageDlg('Deskripsi Kelompok Barang harus diisi !!',mtError,[mbOK],0);
+    txtnama.SetFocus;
+    Exit;
+  end;
+  if LAkunPersediaan.Caption = '0' then begin
+    MessageDlg('Kode Akun untuk '+RzLabel15.Caption+' Tidak ada atau tidak benar !!'#10#13'Mohon periksa kembali kode akun yang diperlukan.',mtError,[mbOK],0);
+    Exit;
+  end;
+  if GBTipe.ItemIndex = 0 then begin
+    if LAkunHpp.Caption = '0' then begin
+      MessageDlg('Kode Akun untuk '+RzLabel11.Caption+' Tidak ada atau tidak benar !!'#10#13'Mohon periksa kembali kode akun yang diperlukan.',mtError,[mbOK],0);
+      Exit;
+    end;
+  end;
+  ModalResult := mrok;
+end;
+
+procedure TFrm_InputKelompokBarang.txtakunhppButtonClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+  akunkas := -1;
+  Frm_DataAkun.RefreshQ;
+  if Frm_DataAkun.ShowModal = mrok then begin
+    txtakunhpp.Text := Frm_DataAkun.QData.FieldValues['kodeakun']+'|'+Frm_DataAkun.QData.FieldValues['namaakun'];
+    LAkunHpp.Caption := Frm_DataAkun.QData.FieldValues['noakun'];
+  end;
+end;
+
+procedure TFrm_InputKelompokBarang.txtakunhppKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtakunhppButtonClick(nil);
+end;
+
+procedure TFrm_InputKelompokBarang.txtakunpersediaanButtonClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+  akunkas := -1;
+  Frm_DataAkun.RefreshQ;
+  if Frm_DataAkun.ShowModal = mrok then begin
+    txtakunpersediaan.Text := Frm_DataAkun.QData.FieldValues['kodeakun']+'|'+Frm_DataAkun.QData.FieldValues['namaakun'];
+    LAkunPersediaan.Caption := Frm_DataAkun.QData.FieldValues['noakun'];
+  end;
+end;
+
+procedure TFrm_InputKelompokBarang.txtakunpersediaanKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtakunpersediaanButtonClick(nil);
+end;
+
+procedure TFrm_InputKelompokBarang.GBTipeClick(Sender: TObject);
+begin
+  if GBTipe.ItemIndex = 0 then begin
+    RzLabel15.Caption := 'Persediaan :';
+    RzLabel11.Visible := True;
+    txtakunhpp.Visible := True;
+  end else if GBTipe.ItemIndex = 1 then begin
+    RzLabel15.Caption := 'Beban :';
+    RzLabel11.Visible := False;
+    txtakunhpp.Visible := False;
+  end;
+end;
+
+end.

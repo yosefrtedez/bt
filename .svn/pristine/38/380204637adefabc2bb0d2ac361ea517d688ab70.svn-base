@@ -1,0 +1,159 @@
+unit UDataKelompokBarang;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ZAbstractRODataset, ZAbstractDataset, ZDataset, Grids,
+  DBGrids, SMDBGrid, RzButton, StdCtrls, Mask, RzEdit, RzLabel, ExtCtrls,
+  RzPanel, cxGraphics, cxControls, cxLookAndFeels, cxLookAndFeelPainters,
+  cxStyles, dxSkinsCore, dxSkinsDefaultPainters, dxSkinscxPCPainter,
+  cxCustomData, cxFilter, cxData, cxDataStorage, cxEdit, cxDBData,
+  cxGridCustomTableView, cxGridTableView, cxGridDBTableView, cxGridLevel,
+  cxClasses, cxGridCustomView, cxGrid, dxSkinBlack, dxSkinBlue,
+  dxSkinCaramel, dxSkinCoffee, dxSkinDarkRoom, dxSkinDarkSide, dxSkinFoggy,
+  dxSkinGlassOceans, dxSkiniMaginary, dxSkinLilian, dxSkinLiquidSky,
+  dxSkinLondonLiquidSky, dxSkinMcSkin, dxSkinMoneyTwins,
+  dxSkinOffice2007Black, dxSkinOffice2007Blue, dxSkinOffice2007Green,
+  dxSkinOffice2007Pink, dxSkinOffice2007Silver, dxSkinOffice2010Black,
+  dxSkinOffice2010Blue, dxSkinOffice2010Silver, dxSkinPumpkin, dxSkinSeven,
+  dxSkinSharp, dxSkinSilver, dxSkinSpringTime, dxSkinStardust,
+  dxSkinSummer2008, dxSkinValentine, dxSkinXmas2008Blue;
+
+type
+  TFrm_DataKelompokBarang = class(TForm)
+    RzPanel2: TRzPanel;
+    RzPanel3: TRzPanel;
+    BtnBatal: TRzBitBtn;
+    BtnOk: TRzBitBtn;
+    QData: TZQuery;
+    DSData: TDataSource;
+    dbgdata: TcxGrid;
+    dbgdataDBTableView1: TcxGridDBTableView;
+    dbgdataLevel1: TcxGridLevel;
+    dbgdataDBTableView1namakategori: TcxGridDBColumn;
+    BtnBaru: TRzBitBtn;
+    BtnUbah: TRzBitBtn;
+    procedure BtnBatalClick(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
+    procedure dbgdataDBTableView1DblClick(Sender: TObject);
+    procedure BtnBaruClick(Sender: TObject);
+    procedure BtnUbahClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure RefreshQ;
+  end;
+
+var
+  Frm_DataKelompokBarang: TFrm_DataKelompokBarang;
+
+implementation
+
+uses UDM, UInputKelompokBarang, UMain;
+
+{$R *.dfm}
+
+procedure TFrm_DataKelompokBarang.BtnBatalClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFrm_DataKelompokBarang.BtnOkClick(Sender: TObject);
+begin
+  if QData.IsEmpty then Exit;
+  ModalResult := mrOk;
+end;
+
+procedure TFrm_DataKelompokBarang.RefreshQ;
+begin
+  with QData do begin
+    Close;
+    Open;
+  end;
+end;
+
+procedure TFrm_DataKelompokBarang.dbgdataDBTableView1DblClick(
+  Sender: TObject);
+begin
+  BtnOkClick(nil);
+end;
+
+procedure TFrm_DataKelompokBarang.BtnBaruClick(Sender: TObject);
+begin
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Data7')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  Application.CreateForm(TFrm_InputKelompokBarang, Frm_InputKelompokBarang);
+  Frm_InputKelompokBarang.ClearText;
+  if Frm_InputKelompokBarang.ShowModal = mrok then begin
+    with TZQuery.Create(Self)do begin
+      Connection := dm.Con;
+      Close;
+      SQL.Text := 'insert into tbl_kelompokbarang values (:a,:b,:d,:f,:k)';
+      ParamByName('a').Value := dm.GenerateNoMaster('kelompokbarang');
+      ParamByName('b').Value := Frm_InputKelompokBarang.txtnama.Text;
+      if Frm_InputKelompokBarang.GBTipe.ItemIndex = 0 then
+        ParamByName('d').Value := Frm_InputKelompokBarang.LAkunHpp.Caption
+      else ParamByName('d').Value := 0;
+      ParamByName('f').Value := Frm_InputKelompokBarang.LAkunPersediaan.Caption;
+      ParamByName('k').Value := Frm_InputKelompokBarang.GBTipe.ItemIndex;
+      ExecSQL;
+      Free;
+    end;
+    RefreshQ;
+  end;
+end;
+
+procedure TFrm_DataKelompokBarang.BtnUbahClick(Sender: TObject);
+begin
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Data7')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if QData.IsEmpty then Exit;
+  Application.CreateForm(TFrm_InputKelompokBarang, Frm_InputKelompokBarang);
+  with Frm_InputKelompokBarang do begin
+    with TZQuery.Create(Self)do begin
+      ClearText;
+      LID.Caption := QData.FieldValues['nokelompokbarang'];
+      txtnama.Text := QData.FieldValues['kelompokbarang'];
+      LAkunHpp.Caption := QData.FieldValues['noakunhpp'];
+      LAkunPersediaan.Caption := QData.FieldValues['noakunpersediaan'];
+      GBTipe.ItemIndex := QData.FieldValues['tipebarang'];
+      GBTipeClick(nil);
+      Close;
+      SQL.Clear;
+      SQL.Text := 'select * from tbl_akun where noakun=:a and aktif=1';
+      ParamByName('a').Value := LAkunHpp.Caption;
+      Open;
+      if not IsEmpty then txtakunhpp.Text := FieldValues['kodeakun']+'|'+FieldValues['namaakun'];
+      Close;
+      SQL.Clear;
+      SQL.Text := 'select * from tbl_akun where noakun=:a and aktif=1';
+      ParamByName('a').Value := LAkunPersediaan.Caption;
+      Open;
+      if not IsEmpty then txtakunpersediaan.Text := FieldValues['kodeakun']+'|'+FieldValues['namaakun'];    
+      if Frm_InputKelompokBarang.ShowModal = mrok then begin
+        Connection := dm.Con;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'update tbl_kelompokbarang set kelompokbarang=:b,noakunhpp=:d,noakunpersediaan=:f,tipebarang=:k where nokelompokbarang=:a';
+        ParamByName('a').Value := LID.Caption;
+        ParamByName('b').Value := Frm_InputKelompokBarang.txtnama.Text;
+        if Frm_InputKelompokBarang.GBTipe.ItemIndex = 0 then
+          ParamByName('d').Value := Frm_InputKelompokBarang.LAkunHpp.Caption
+        else ParamByName('d').Value := 0;
+        ParamByName('f').Value := Frm_InputKelompokBarang.LAkunPersediaan.Caption;
+        ParamByName('k').Value := Frm_InputKelompokBarang.GBTipe.ItemIndex;
+        ExecSQL;
+        RefreshQ;
+      end;
+      Free;
+    end;
+  end;
+end;
+
+end.

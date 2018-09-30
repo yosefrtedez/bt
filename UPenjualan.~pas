@@ -1,0 +1,632 @@
+unit UPenjualan;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ZAbstractRODataset, ZAbstractDataset, ZDataset, RzLine,
+  NxColumnClasses, NxColumns, NxScrollControl, NxCustomGridControl,
+  NxCustomGrid, NxGrid, RzEdit, RzButton, NxEdit, StdCtrls, RzCmboBx,
+  RzRadChk, Mask, RzBtnEdt, RzLabel, RzPanel, ExtCtrls, cxPC, NxColumns6,
+  NxGridView6, NxControls6, NxCustomGrid6, NxVirtualGrid6, NxGrid6, RzTabs;
+
+type
+  TFrm_Penjualan = class(TForm)
+    RzGroupBox1: TRzGroupBox;
+    RzPanel1: TRzPanel;
+    RzLabel1: TRzLabel;
+    RzLabel2: TRzLabel;
+    RzLabel4: TRzLabel;
+    LCustomer: TRzLabel;
+    LID: TRzLabel;
+    txtcustomer: TRzButtonEdit;
+    txtreferensi: TRzEdit;
+    dtpfaktur: TNxDatePicker;
+    RzPanel2: TRzPanel;
+    BtnRekam: TRzBitBtn;
+    BtnBatal: TRzBitBtn;
+    RzPanel3: TRzPanel;
+    RzPanel4: TRzPanel;
+    LPiutang: TRzLabel;
+    RzLabel27: TRzLabel;
+    RzLabel26: TRzLabel;
+    RzLabel10: TRzLabel;
+    RzLabel11: TRzLabel;
+    RzLabel13: TRzLabel;
+    RzLabel14: TRzLabel;
+    txtsubtotal: TRzNumericEdit;
+    txttotal: TRzNumericEdit;
+    txtbiaya: TRzNumericEdit;
+    txtpajak: TRzNumericEdit;
+    Q1: TZQuery;
+    QKas: TZQuery;
+    txtdiskondays: TRzNumericEdit;
+    txtduedate: TRzNumericEdit;
+    txtearlydiscount: TRzNumericEdit;
+    txtlatecharge: TRzNumericEdit;
+    BtnPengiriman: TRzBitBtn;
+    RzLabel6: TRzLabel;
+    txtsj: TRzButtonEdit;
+    RzLabel3: TRzLabel;
+    RzLabel5: TRzLabel;
+    dbgbarang: TNextGrid6;
+    NxReportGridView62: TNxReportGridView6;
+    NxTextColumn62: TNxTextColumn6;
+    NxTextColumn63: TNxTextColumn6;
+    NxNumberColumn65: TNxNumberColumn6;
+    NxTextColumn64: TNxTextColumn6;
+    NxNumberColumn66: TNxNumberColumn6;
+    NxNumberColumn616: TNxNumberColumn6;
+    NxNumberColumn617: TNxNumberColumn6;
+    NxNumberColumn618: TNxNumberColumn6;
+    NxTextColumn65: TNxTextColumn6;
+    NxNumberColumn619: TNxNumberColumn6;
+    NxNumberColumn620: TNxNumberColumn6;
+    NxNumberColumn621: TNxNumberColumn6;
+    NxNumberColumn622: TNxNumberColumn6;
+    NxNumberColumn613: TNxNumberColumn6;
+    NxNumberColumn611: TNxNumberColumn6;
+    NxNumberColumn624: TNxNumberColumn6;
+    NxNumberColumn625: TNxNumberColumn6;
+    NxNumberColumn626: TNxNumberColumn6;
+    NxNumberColumn627: TNxNumberColumn6;
+    NxNumberColumn628: TNxNumberColumn6;
+    NxNumberColumn629: TNxNumberColumn6;
+    NxNumberColumn64: TNxNumberColumn6;
+    NxNumberColumn61: TNxNumberColumn6;
+    NxNumberColumn62: TNxNumberColumn6;
+    RzLabel7: TRzLabel;
+    txtterm: TRzEdit;
+    LNoPenjualanKirim: TRzLabel;
+    LBiayaLain: TRzLabel;
+    procedure txtcustomerButtonClick(Sender: TObject);
+    procedure txtcustomerKeyPress(Sender: TObject; var Key: Char);
+    procedure BtnBatalClick(Sender: TObject);
+    procedure BtnRekamClick(Sender: TObject);
+    procedure txtsjButtonClick(Sender: TObject);
+    procedure txtsjKeyPress(Sender: TObject; var Key: Char);
+    procedure BtnPengirimanClick(Sender: TObject);
+    procedure dtpfakturChange(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure ClearText;
+    procedure UpdateTotal;
+    procedure IsiDBGBarang;
+  end;
+
+var
+  Frm_Penjualan: TFrm_Penjualan;
+
+implementation
+
+uses UDM, NxCells, UMain, UDataKontak, USetAkun, UDataPenjualanPengiriman, UTermOfPayment, UKonfirmasiPembayaranUM;
+
+{$R *.dfm}
+
+{ TFrm_Penjualan }
+
+procedure TFrm_Penjualan.ClearText;
+begin
+  LID.Caption := '0';
+  txtcustomer.Clear;
+  LCustomer.Caption := '0';
+  dtpfaktur.Date := Date;
+  txtreferensi.Text := DM.GenerateKodeTransaksi('SA',dtpfaktur.Date);
+  dbgbarang.ClearRows;
+  LPiutang.Caption := '0';
+  txtdiskondays.Value := 0;
+  txtduedate.Value := 0;
+  txtearlydiscount.Value := 0;
+  txtlatecharge.Value := 0;
+  txtterm.Clear;
+  txtsj.Clear;
+  LNoPenjualanKirim.Caption := '0';
+  txtbiaya.Value := 0;
+  LBiayaLain.Caption := '0';
+  UpdateTotal;
+end;
+
+procedure TFrm_Penjualan.UpdateTotal;
+var
+  dpp,ppn1:Double;
+  i:integer;
+begin
+  dpp := 0;
+  ppn1 := 0;
+  with dbgbarang do begin
+    for i:=0 to RowCount-1 do begin
+      dpp:=dpp+Cell[18,i].AsFloat;
+      ppn1 := ppn1+Cell[19,i].AsFloat;
+    end;
+    txtsubtotal.Value := dpp;
+    txtpajak.Value := ppn1;
+    txttotal.Value := txtsubtotal.Value+txtpajak.Value+txtbiaya.Value;
+  end;
+end;
+
+procedure TFrm_Penjualan.txtcustomerButtonClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataKontak, Frm_DataKontak);
+  tipekontak := 0;
+  Frm_DataKontak.RefreshQ;
+  if Frm_DataKontak.ShowModal = mrok then begin
+    if LID.Caption <> '0' then begin
+      if MessageDlg('Proses ini akan menghapus semua detil transaksi! Lanjutkan ?',mtConfirmation, [mbYes,mbNo],0)= mrno then begin
+        Exit;
+      end;
+    end;
+    ClearText;
+    txtcustomer.Text := Frm_DataKontak.QData.FieldValues['namakontak'];
+    LCustomer.Caption := Frm_DataKontak.QData.FieldValues['nokontak'];
+    LPiutang.Caption := Frm_DataKontak.QData.FieldValues['noakun'];
+  end;
+end;
+
+procedure TFrm_Penjualan.txtcustomerKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtcustomerButtonClick(nil);
+end;
+
+procedure TFrm_Penjualan.BtnBatalClick(Sender: TObject);
+var
+   ts: TcxTabSheet;
+begin
+   ts := (Self.parent as TcxTabSheet);
+   Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_Penjualan.BtnRekamClick(Sender: TObject);
+var
+  i,j,notransaksi,noakungiro,pakaigiro:Integer;
+  ketsales,nogiro,bankgiro:string;
+  hpp,komisisales:Double;
+  tempogiro: TDate;
+begin
+  hpp:=0;
+  if DM.CekAkunPenting = False then begin
+    MessageDlg('Transaksi tidak dapat diproses. Cek kembali Akun Default !!',mtError,[mbOK],0);
+    Exit;
+  end;
+  if dbgbarang.RowCount <=0  then begin
+    MessageDlg('Tidak ada transaksi !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if DM.CekPlafon(StrToInt(LCustomer.Caption),txttotal.Value)=False then begin
+    if MessageDlg('Transaksi ini melebihi batas kredit customer.'#10#13'Proses ?',mtConfirmation,[mbYes,mbNo],0)=mrno then begin
+      Exit;
+    end;
+  end;
+  {if DM.CekPeriode(dtpfaktur.Date)= 0 then begin
+    MessageDlg('Anda tidak diperkenankan mengubah transaksi sebelum periode akuntansi yang sedang aktif',mtError,[mbOK],0);
+    Exit;
+  end else if DM.CekPeriode(dtpfaktur.Date)= 2 then begin
+    if MessageDlg('Tanggal transaksi ini setelah periode akuntansi. Lanjutkan ?',mtConfirmation,[mbYes,mbNo],0)= mrno then begin
+      Exit;
+    end;
+  end;   }
+  with TZQuery.Create(Self)do begin
+    Connection := DM.con;
+    if LID.Caption = '0' then begin
+      if LNoPenjualanKirim.Caption <> '0' then begin
+        // cek sj
+        Close;
+        SQL.Clear;
+        SQL.Text := 'SELECT * FROM tbl_penjualaninvoice WHERE nopenjualankirim=:np';
+        ParamByName('np').Value := LNoPenjualanKirim.Caption;
+        Open;
+        if not IsEmpty then begin
+          MessageDlg('No. Surat Jalan telah diproses menjadi invoice. Cek data kembali!',mtWarning,[mbOK],0);
+          Free;
+          Exit;
+        end;
+      end;
+      if MessageDlg('Apakah data sudah benar ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+        Screen.Cursor := crSQLWait;
+        try
+          dm.con.StartTransaction;
+          notransaksi := DM.GenerateNoMaster('penjualaninvoice');
+          txtreferensi.Text := DM.GenerateKodeTransaksi('SA',dtpfaktur.Date);
+          Close;
+          SQL.Clear;
+          SQL.Text := 'insert into tbl_referensikodetransaksi values (:a,:b,:c)';
+          ParamByName('a').Value := 'SA';
+          ParamByName('b').Value := dtpfaktur.Date;
+          ParamByName('c').Value := txtreferensi.Text;
+          ExecSQL;
+          ketsales := 'Penjualan, '+txtcustomer.Text+' No. '+txtreferensi.Text;
+          Close;
+          SQL.Clear;
+          // masuk ke tabel penjualan
+          SQL.Text := 'insert into tbl_penjualaninvoice values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j,:k,:l,:m,:n,:o,:p)';
+          ParamByName('a').Value := notransaksi;
+          ParamByName('b').Value := txtreferensi.Text;
+          ParamByName('c').Value := FormatDateTime('yyyy-mm-dd',dtpfaktur.Date);
+          ParamByName('d').Value := LNoPenjualanKirim.Caption;
+          ParamByName('e').Value := LCustomer.Caption;
+          ParamByName('f').Value := LPiutang.Caption;
+          ParamByName('g').Value := txtsubtotal.Value;
+          ParamByName('h').Value := txtpajak.Value;
+          ParamByName('i').Value := txtbiaya.Value;
+          ParamByName('j').Value := txttotal.Value;
+          ParamByName('k').Value := txtdiskondays.Value;
+          ParamByName('l').Value := txtduedate.Value;
+          ParamByName('m').Value := txtearlydiscount.Value;
+          ParamByName('n').Value := txtlatecharge.Value;
+          ParamByName('o').Value := Frm_Main.txtuser.Caption;
+          ParamByName('p').Value := '';
+          ExecSQL;
+          with dbgbarang do begin
+            for i:=0 to RowCount-1 do begin
+              Close;
+              SQL.Clear;
+              //masuk tabel penjualan invoice detil barang
+              SQL.Text := 'insert into tbl_penjualaninvoicedetail values(:a,:b,:c,:d,:e,:f,:g,:h,:i,:j,:k,:l,:m,:n,:o,:p,:q,:r,:s,:t,:u)';
+              ParamByName('a').Value := notransaksi;
+              ParamByName('b').Value := Cell[9,i].AsInteger;
+              ParamByName('c').Value := Cell[2,i].AsFloat;
+              ParamByName('d').Value := Cell[4,i].AsFloat;
+              ParamByName('e').Value := Cell[5,i].AsFloat;
+              ParamByName('f').Value := Cell[6,i].AsFloat;
+              ParamByName('g').Value := Cell[7,i].AsFloat;
+              ParamByName('h').Value := Cell[10,i].AsInteger;
+              ParamByName('i').Value := Cell[11,i].AsFloat;
+              ParamByName('j').Value := Cell[12,i].AsInteger;
+              ParamByName('k').Value := Cell[13,i].AsInteger;
+              ParamByName('l').Value := Cell[14,i].AsInteger;
+              ParamByName('m').Value := Cell[18,i].AsFloat;
+              ParamByName('n').Value := Cell[19,i].AsFloat;
+              ParamByName('o').Value := Cell[15,i].AsInteger;
+              ParamByName('p').Value := Cell[16,i].AsInteger;
+              ParamByName('q').Value := Cell[17,i].AsFloat;
+              ParamByName('r').Value := Cell[20,i].AsInteger;
+              ParamByName('s').Value := Cell[21,i].AsInteger;
+              ParamByName('t').Value := Cell[22,i].AsInteger;
+              ParamByName('u').Value := Cell[23,i].AsInteger;
+              ExecSQL;
+
+              DM.InsertBukuBesarAkun(Cell[23,i].AsInteger,dtpfaktur.Date,'SA',notransaksi,ketsales,0,(Cell[18,i].AsFloat+Cell[19,i].AsFloat));
+              if Cell[19,i].AsFloat > 0 then begin
+                DM.InsertBukuBesarAkun(Cell[22,i].AsInteger,dtpfaktur.Date,'SA',notransaksi,ketsales,Cell[19,i].AsFloat,0);
+                DM.InsertBukuBesarAkun(Cell[20,i].AsInteger,dtpfaktur.Date,'SA',notransaksi,ketsales,0,Cell[19,i].AsFloat);
+              end;
+            end;
+          end;
+          if txtbiaya.Value > 0 then begin
+            DM.InsertBukuBesarAkun(StrToInt(LBiayaLain.Caption),dtpfaktur.Date,'SA',notransaksi,ketsales,0,txtbiaya.Value);
+          end;
+          DM.InsertBukuBesarAkun(StrToInt(LPiutang.Caption),dtpfaktur.Date,'SA',notransaksi,ketsales,txttotal.Value,0);
+          dm.con.Commit;
+          Screen.Cursor := crDefault;
+          if MessageDlg('Cetak Nota ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'select * from tbl_terbilang where noreferensi=:np and tipe=:t';
+            ParamByName('np').Value := notransaksi;
+            ParamByName('t').Value := 'SA';
+            Open;
+            if IsEmpty then begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'insert into tbl_terbilang values (:a,:b,:c)';
+              ParamByName('a').Value := notransaksi;
+              ParamByName('b').Value := 'SA';
+              ParamByName('c').Value := DM.ConvKeHuruf(FloatToStr(txttotal.IntValue));
+              ExecSQL;
+            end else begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'update tbl_terbilang set terbilang=:c where noreferensi=:np and tipe=:t';
+              ParamByName('np').Value := notransaksi;
+              ParamByName('t').Value := 'SA';
+              ParamByName('c').Value := DM.ConvKeHuruf(FloatToStr(txttotal.IntValue));
+              ExecSQL;
+            end;
+            dm.Q_NotaPenjualanInv.Close;
+            DM.Q_NotaPenjualanInv.ParamByName('np').Value := notransaksi;
+            DM.Q_NotaPenjualanInv.Open;
+            dm.Q_NotaTerbilang.Close;
+            DM.Q_NotaTerbilang.ParamByName('np').Value := notransaksi;
+            DM.Q_NotaTerbilang.ParamByName('t').Value := 'SA';
+            DM.Q_NotaTerbilang.Open;
+            DM.Nota_PenjualanInv.ShowReport(True);
+          end;
+        except
+          on E: Exception do begin
+            dm.con.Rollback;
+            MessageDlg('Error: ' + E.Message,mtWarning,[mbOk],0);
+          end;
+        end;
+        ClearText;
+        dbgbarang.AddRow();
+      end;
+    end else begin
+      Close;
+      SQL.Clear;
+      SQL.Text := 'SELECT IFNULL(SUM(a.total),0)AS total FROM ' +
+                  '(SELECT nopenjualaninvoice AS noref,IFNULL(SUM(jumlahbayar+selisih),0)AS total FROM tbl_pembayaranpiutangdetail GROUP BY nopenjualaninvoice ' +
+                  'UNION ' +
+                  'SELECT nopenjualaninvoice AS noref,IFNULL(SUM(total),0)AS total FROM tbl_returpenjualan GROUP BY nopenjualaninvoice)AS a ' +
+                  'WHERE a.noref=:np';
+      ParamByName('np').Value := LID.Caption;
+      Open;
+      if FieldValues['total']>0 then begin
+        MessageDlg('Invoice Penjualan tidak dapat diubah, karena barang telah terpakai oleh transaksi pembayaran / retur'#10#13'Hapus dulu transaksi pembayaran atau retur untuk Transaksi ini.',mtError,[mbOK],0);
+        Free;
+        Exit;
+      end;
+      if LNoPenjualanKirim.Caption <> '0' then begin
+        // cek sj
+        Close;
+        SQL.Clear;
+        SQL.Text := 'SELECT * FROM tbl_penjualaninvoice WHERE nopenjualankirim=:np';
+        ParamByName('np').Value := LNoPenjualanKirim.Caption;
+        Open;
+        if not IsEmpty then begin
+          if LID.Caption <> FieldValues['nopenjualaninvoice'] then begin
+            MessageDlg('No. Surat Jalan telah diproses menjadi invoice. Cek data kembali!',mtWarning,[mbOK],0);
+            Free;
+            Exit;
+          end;
+        end;
+      end;
+      if MessageDlg('Apakah data sudah benar ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+        Screen.Cursor := crSQLWait;
+        try
+          dm.con.StartTransaction;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_penjualaninvoicedetail where nopenjualaninvoice=:np';
+          ParamByName('np').Value := LID.Caption;
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_bukubesarakun where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'SA';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_laba where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'SA';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_bukubesarkontak where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'SA';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_penjualaninvoice where nopenjualaninvoice=:np';
+          ParamByName('np').Value := LID.Caption;
+          ExecSQL;
+          ketsales := 'Penjualan, '+txtcustomer.Text+' No. '+txtreferensi.Text;
+          Close;
+          SQL.Clear;
+          // masuk ke tabel penjualan
+          SQL.Text := 'insert into tbl_penjualaninvoice values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j,:k,:l,:m,:n,:o,:p)';
+          ParamByName('a').Value := LID.Caption;
+          ParamByName('b').Value := txtreferensi.Text;
+          ParamByName('c').Value := FormatDateTime('yyyy-mm-dd',dtpfaktur.Date);
+          ParamByName('d').Value := LNoPenjualanKirim.Caption;
+          ParamByName('e').Value := LCustomer.Caption;
+          ParamByName('f').Value := LPiutang.Caption;
+          ParamByName('g').Value := txtsubtotal.Value;
+          ParamByName('h').Value := txtpajak.Value;
+          ParamByName('i').Value := txtbiaya.Value;
+          ParamByName('j').Value := txttotal.Value;
+          ParamByName('k').Value := txtdiskondays.Value;
+          ParamByName('l').Value := txtduedate.Value;
+          ParamByName('m').Value := txtearlydiscount.Value;
+          ParamByName('n').Value := txtlatecharge.Value;
+          ParamByName('o').Value := Frm_Main.txtuser.Caption;
+          ParamByName('p').Value := '';
+          ExecSQL;
+          with dbgbarang do begin
+            for i:=0 to RowCount-1 do begin
+              Close;
+              SQL.Clear;
+              //masuk tabel penjualan invoice detil barang
+              SQL.Text := 'insert into tbl_penjualaninvoicedetail values(:a,:b,:c,:d,:e,:f,:g,:h,:i,:j,:k,:l,:m,:n,:o,:p,:q,:r,:s,:t,:u)';
+              ParamByName('a').Value := LID.Caption;
+              ParamByName('b').Value := Cell[9,i].AsInteger;
+              ParamByName('c').Value := Cell[2,i].AsFloat;
+              ParamByName('d').Value := Cell[4,i].AsFloat;
+              ParamByName('e').Value := Cell[5,i].AsFloat;
+              ParamByName('f').Value := Cell[6,i].AsFloat;
+              ParamByName('g').Value := Cell[7,i].AsFloat;
+              ParamByName('h').Value := Cell[10,i].AsInteger;
+              ParamByName('i').Value := Cell[11,i].AsFloat;
+              ParamByName('j').Value := Cell[12,i].AsInteger;
+              ParamByName('k').Value := Cell[13,i].AsInteger;
+              ParamByName('l').Value := Cell[14,i].AsInteger;
+              ParamByName('m').Value := Cell[18,i].AsFloat;
+              ParamByName('n').Value := Cell[19,i].AsFloat;
+              ParamByName('o').Value := Cell[15,i].AsInteger;
+              ParamByName('p').Value := Cell[16,i].AsInteger;
+              ParamByName('q').Value := Cell[17,i].AsFloat;
+              ParamByName('r').Value := Cell[20,i].AsInteger;
+              ParamByName('s').Value := Cell[21,i].AsInteger;
+              ParamByName('t').Value := Cell[22,i].AsInteger;
+              ParamByName('u').Value := Cell[23,i].AsInteger;
+              ExecSQL;
+
+              DM.InsertBukuBesarAkun(Cell[23,i].AsInteger,dtpfaktur.Date,'SA',strtoInt(LID.Caption),ketsales,0,(Cell[18,i].AsFloat+Cell[19,i].AsFloat));
+              if Cell[19,i].AsFloat > 0 then begin
+                DM.InsertBukuBesarAkun(Cell[22,i].AsInteger,dtpfaktur.Date,'SA',strtoInt(LID.Caption),ketsales,Cell[19,i].AsFloat,0);
+                DM.InsertBukuBesarAkun(Cell[20,i].AsInteger,dtpfaktur.Date,'SA',strtoInt(LID.Caption),ketsales,0,Cell[19,i].AsFloat);
+              end;
+            end;
+          end;
+          if txtbiaya.Value > 0 then begin
+            DM.InsertBukuBesarAkun(StrToInt(LBiayaLain.Caption),dtpfaktur.Date,'SA',strtoInt(LID.Caption),ketsales,0,txtbiaya.Value);
+          end;
+          DM.InsertBukuBesarAkun(StrToInt(LPiutang.Caption),dtpfaktur.Date,'SA',strtoInt(LID.Caption),ketsales,txttotal.Value,0);
+          dm.con.Commit;
+          Screen.Cursor := crDefault;
+          if MessageDlg('Cetak Nota ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'select * from tbl_terbilang where noreferensi=:np and tipe=:t';
+            ParamByName('np').Value := LID.Caption;
+            ParamByName('t').Value := 'SA';
+            Open;
+            if IsEmpty then begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'insert into tbl_terbilang values (:a,:b,:c)';
+              ParamByName('a').Value := LID.Caption;
+              ParamByName('b').Value := 'SA';
+              ParamByName('c').Value := DM.ConvKeHuruf(FloatToStr(txttotal.IntValue));
+              ExecSQL;
+            end else begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'update tbl_terbilang set terbilang=:c where noreferensi=:np and tipe=:t';
+              ParamByName('np').Value := LID.Caption;
+              ParamByName('t').Value := 'SA';
+              ParamByName('c').Value := DM.ConvKeHuruf(FloatToStr(txttotal.IntValue));
+              ExecSQL;
+            end;
+            dm.Q_NotaPenjualanInv.Close;
+            DM.Q_NotaPenjualanInv.ParamByName('np').Value := LID.Caption;
+            DM.Q_NotaPenjualanInv.Open;
+            dm.Q_NotaTerbilang.Close;
+            DM.Q_NotaTerbilang.ParamByName('np').Value := LID.Caption;
+            DM.Q_NotaTerbilang.ParamByName('t').Value := 'SA';
+            DM.Q_NotaTerbilang.Open;
+            DM.Nota_PenjualanInv.ShowReport(True);
+          end;
+        except
+          on E: Exception do begin
+            dm.con.Rollback;
+            MessageDlg('Error: ' + E.Message,mtWarning,[mbOk],0);
+          end;
+        end;
+        ClearText;
+        dbgbarang.AddRow();
+      end;
+    end;
+    Free;
+  end;
+end;
+
+procedure TFrm_Penjualan.txtsjButtonClick(Sender: TObject);
+begin
+  BtnPengirimanClick(nil);
+end;
+
+procedure TFrm_Penjualan.txtsjKeyPress(Sender: TObject; var Key: Char);
+begin
+  txtsjButtonClick(nil);
+end;
+
+procedure TFrm_Penjualan.BtnPengirimanClick(Sender: TObject);
+var
+  i,j: Integer;
+  total: Double;
+begin
+  if LCustomer.Caption = '0' then begin
+    MessageDlg('Customer : harus diisi !',mtError,[mbOK],0);
+    txtcustomer.SetFocus;
+    Exit;
+  end;
+  Application.CreateForm(TFrm_DataDO, Frm_DataDO);
+  customerkirim := StrToInt(LCustomer.Caption);
+  Frm_DataDO.RefreshQ;
+  if Frm_DataDO.ShowModal = mrok then begin
+    if LNoPenjualanKirim.Caption = Frm_DataDO.QData.FieldValues['nopenjualankirim'] then begin
+      Exit;
+    end else begin
+      if LNoPenjualanKirim.Caption <> '0' then begin
+        if MessageDlg('Proses ini akan menghapus semua detil transaksi! Lanjutkan ?',mtConfirmation, [mbYes,mbNo],0)= mrno then begin
+          Exit;
+        end;
+      end;
+      txtsj.Text := Frm_DataDO.QData.FieldValues['kodepenjualankirim'];
+      dtpfaktur.Date := Frm_DataDO.QData.FieldValues['tglpenjualankirim'];
+      LNoPenjualanKirim.Caption := Frm_DataDO.QData.FieldValues['nopenjualankirim'];
+      with TZQuery.Create(Self)do begin
+        Connection := DM.con;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'select * from tbl_penjualanorder where nopenjualanorder=:a';
+        ParamByName('a').Value := Frm_DataDO.QData.FieldValues['nopenjualanorder'];
+        Open;
+        txtbiaya.Value := FieldValues['biayalain'];
+        LBiayaLain.Caption := FieldValues['noakunbiayalain'];
+        txtdiskondays.Value := FieldValues['diskonday'];
+        txtduedate.Value := FieldValues['duedate'];
+        txtearlydiscount.Value := FieldValues['earlydiskon'];
+        txtlatecharge.Value := FieldValues['latecharge'];
+        txtterm.Text := DM.GetTerm(txtdiskondays.Value,txtduedate.Value,txtearlydiscount.Value,txtlatecharge.Value);
+        IsiDBGBarang;
+        UpdateTotal;
+      end;
+    end;
+  end;
+end;
+
+procedure TFrm_Penjualan.IsiDBGBarang;
+var
+  i,j: Integer;
+begin
+  dbgbarang.ClearRows;
+  with TZQuery.Create(Self)do begin
+    Connection := DM.con;
+    Close;
+    SQL.Clear;
+    SQL.Text := 'select a.*,ifnull(b.kodepajak,'+QuotedStr('-')+')as kodepajak from ' +
+                '(select a.*,d.kodesatuan from ' +
+                '(select a.*,b.kodebarang,b.namabarang from ' +
+                '(select * from tbl_penjualankirimdetail where nopenjualankirim=:ib) as a ' +
+                'left join tbl_barang as b on b.nobarang=a.nobarang)as a ' +
+                'left join tbl_satuan as d on d.nosatuan=a.nosatuan)as a ' +
+                'left join tbl_pajak as b on b.nopajak=a.nopajak';
+    ParamByName('ib').Value := LNoPenjualanKirim.Caption;
+    Open;
+    if not IsEmpty then begin
+      First;
+      for j:= 0 to RecordCount -1 do begin
+        dbgbarang.AddRow();
+        dbgbarang.Cell[0,j].AsString := FieldValues['kodebarang'];
+        dbgbarang.Cell[1,j].AsString := FieldValues['namabarang'];
+        dbgbarang.Cell[2,j].AsFloat := FieldValues['qty'];
+        dbgbarang.Cell[3,j].AsString := FieldValues['kodesatuan']+'('+FloatToStr(FieldValues['nilai'])+')';
+        dbgbarang.Cell[4,j].AsFloat := FieldValues['hargajual'];
+        dbgbarang.Cell[5,j].AsFloat := FieldValues['diskon1'];
+        dbgbarang.Cell[6,j].AsFloat := FieldValues['diskon2'];
+        dbgbarang.Cell[7,j].AsFloat := FieldValues['subtotal'];
+        dbgbarang.Cell[8,j].AsString := FieldValues['kodepajak'];
+        dbgbarang.Cell[9,j].AsInteger := FieldValues['nobarang'];
+        dbgbarang.Cell[10,j].AsInteger := FieldValues['nosatuan'];
+        dbgbarang.Cell[11,j].AsFloat := FieldValues['nilai'];
+        dbgbarang.Cell[12,j].AsInteger := FieldValues['noakunpersediaan'];
+        dbgbarang.Cell[13,j].AsInteger := FieldValues['noakunpenjualan'];
+        dbgbarang.Cell[14,j].AsInteger := FieldValues['noakunhpp'];
+        dbgbarang.Cell[15,j].AsInteger := FieldValues['nopajak'];
+        dbgbarang.Cell[16,j].AsInteger := FieldValues['tipepajak'];
+        dbgbarang.Cell[17,j].AsFloat := FieldValues['persenpajak'];
+        dbgbarang.Cell[18,j].AsFloat := FieldValues['dppbarang'];
+        dbgbarang.Cell[19,j].AsFloat := FieldValues['ppnbarang'];
+        dbgbarang.Cell[20,j].AsInteger := FieldValues['noakunpajakpenjualan'];
+        dbgbarang.Cell[21,j].AsInteger := FieldValues['tipebarang'];
+        dbgbarang.Cell[22,j].AsInteger := FieldValues['akunpajakpenjualanblm'];
+        dbgbarang.Cell[23,j].AsInteger := FieldValues['noakunterkirim'];
+        Next;
+      end;
+    end;
+    Free;
+  end;
+end;
+
+procedure TFrm_Penjualan.dtpfakturChange(Sender: TObject);
+begin
+  if LID.Caption = '0' then txtreferensi.Text := DM.GenerateKodeTransaksi('SA',dtpfaktur.Date);
+end;
+
+end.

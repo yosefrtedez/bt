@@ -1,0 +1,179 @@
+unit USettingDatabase;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ZAbstractRODataset, ZAbstractDataset, ZDataset, StdCtrls,
+  Mask, RzEdit, RzRadChk, RzButton, ExtCtrls, RzPanel, RzLabel, IniFiles, Math;
+
+type
+  TFrm_SettingDatabase = class(TForm)
+    RzLabel1: TRzLabel;
+    RzPanel2: TRzPanel;
+    BtnBatal: TRzBitBtn;
+    BtnOK: TRzBitBtn;
+    RzPanel1: TRzPanel;
+    cblokal: TRzRadioButton;
+    cbserver: TRzRadioButton;
+    txthost: TRzEdit;
+    ZQuery1: TZQuery;
+    RzLabel2: TRzLabel;
+    txtport: TRzNumericEdit;
+    procedure FormShow(Sender: TObject);
+    procedure BtnOKClick(Sender: TObject);
+    procedure cblokalClick(Sender: TObject);
+    procedure cbserverClick(Sender: TObject);
+    procedure BtnBatalClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Frm_SettingDatabase: TFrm_SettingDatabase;
+  Ini: TIniFile;
+
+implementation
+
+uses UDM, UMain, USetupPerusahaan, ULogin;
+
+{$R *.dfm}
+
+procedure TFrm_SettingDatabase.FormShow(Sender: TObject);
+begin
+  cblokal.Checked := True;
+  cblokalClick(nil);if konek = '1' then begin
+    cblokal.Checked := True;
+    cblokalClick(nil);
+  end else if konek = '2' then begin
+    cbserver.Checked := True;
+    cbserverClick(nil);
+  end;
+  txthost.Text := host;
+  txtport.IntValue := StrToInt(portdb);
+end;
+
+procedure TFrm_SettingDatabase.BtnOKClick(Sender: TObject);
+begin
+  if cbserver.Checked = True then begin
+    if txthost.Text = '' then begin
+      txthost.SetFocus;
+      Exit;
+    end;
+  end;
+  //cek koneksi
+  DM.Con.Disconnect;
+  if cblokal.Checked = True then begin
+    dm.Con.HostName := 'localhost';
+    txthost.Text := 'localhost';
+  end else if cbserver.Checked = True then begin
+    DM.Con.HostName := txthost.Text;
+  end;
+  dm.Con.Port := txtport.IntValue;
+  dm.Con.User := user;
+  dm.Con.Password := password;
+  dm.Con.Database := dba;
+  try
+    DM.Con.Connect;
+    FileIni := ExtractFilePath(Application.ExeName) + 'setting.ini';
+    Ini := TIniFile.Create(FileIni);
+    if cblokal.Checked = True then begin
+      Ini.WriteString('database','konek','1');
+      Ini.WriteString('database','host','localhost');
+    end else if cbserver.Checked = True then begin
+      Ini.WriteString('database','konek','2');
+      Ini.WriteString('database','host',txthost.Text);
+    end;
+    Ini.WriteString('database','host',txthost.Text);
+    Ini.WriteString('database','port',IntToStr(txtport.IntValue));
+    //user := dm.Con.User;
+    //password := dm.Con.Password;
+    //dba := dm.Con.Database;
+    host := txthost.Text;
+    portdb := IntToStr(txtport.IntValue);
+    koneksi := txthost.Text;
+    with TZQuery.Create(Self)do begin
+      Connection := DM.Con;
+      Close;
+      SQL.Text := 'select * from tbl_setupperusahaan';
+      Open;
+      if IsEmpty then begin
+        {Application.CreateForm(TFrm_InfoPerusahaan, Frm_InfoPerusahaan);
+        Frm_InfoPerusahaan.Cleartext;
+        if Frm_InfoPerusahaan.ShowModal=mrok then begin
+          Close;
+          SQL.Clear;
+          SQL.Text := 'insert into tbl_setupperusahaan values (:a,:b,:c,:d,:e,:f)';
+          ParamByName('a').Value := Frm_InfoPerusahaan.txtperusahaan.Text;
+          ParamByName('b').Value := Frm_InfoPerusahaan.txtalamat.Text;
+          ParamByName('c').Value := Frm_InfoPerusahaan.txtkota.Text;
+          ParamByName('d').Value := Frm_InfoPerusahaan.txtkodepos.Text;
+          ParamByName('e').Value := Frm_InfoPerusahaan.txttelp.Text;
+          ParamByName('f').Value := Frm_InfoPerusahaan.txtdiskon.Value;
+          ExecSQL;
+          namaperusahaan := Frm_InfoPerusahaan.txtperusahaan.Text;
+        end else begin
+          Free;
+          Exit;
+        end;     }
+      end else begin
+        Last;
+        namaperusahaan := FieldValues['nama'];
+      end;
+      Close;
+      SQL.Clear;
+      SQL.Text := 'select * from tbl_user';
+      Open;
+      if not IsEmpty then begin
+        Free;
+        Application.CreateForm(TFrm_Login, Frm_Login);
+        Frm_Login.ClearText;
+        Frm_Login.LMessage.Caption := 'Enter your name and password';
+        tipe := 'login';
+        Frm_Login.ShowModal;
+      end else begin
+        Free;
+        Frm_Main.Caption := namaperusahaan+' - '+host;
+        Frm_Main.ChangePassword1.Visible := False;
+        Frm_Main.CreatePanel;
+        Frm_SettingDatabase.Close;
+      end;
+    end;
+  except
+    on E: Exception do begin
+      ShowMessage('Error: ' +E.Message);
+    end;
+  end;
+end;
+
+procedure TFrm_SettingDatabase.cblokalClick(Sender: TObject);
+begin
+  if cblokal.Checked = True then begin
+    txthost.Enabled := False;
+    cbserver.Checked := False;
+  end;
+end;
+
+procedure TFrm_SettingDatabase.cbserverClick(Sender: TObject);
+begin
+  if cbserver.Checked = True then begin
+    txthost.Enabled := True;
+    cblokal.Checked := False;
+  end;
+end;
+
+procedure TFrm_SettingDatabase.BtnBatalClick(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+procedure TFrm_SettingDatabase.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  if koneksi = '' then Application.Terminate;
+end;
+
+end.

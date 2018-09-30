@@ -1,0 +1,645 @@
+unit UPembayaranHutang;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, RzEdit, NxColumnClasses, frxClass, frxDBSet, DB,
+  ZAbstractRODataset, ZAbstractDataset, ZDataset, ImgList, NxColumns,
+  NxScrollControl, NxCustomGridControl, NxCustomGrid, NxGrid, RzButton,
+  RzRadChk, StdCtrls, Mask, RzBtnEdt, RzLabel, RzPanel, ExtCtrls, ComCtrls,
+  RzDTP, RzCmboBx, cxPC, NxEdit, NxColumns6, NxGridView6, NxControls6,
+  NxCustomGrid6, NxVirtualGrid6, NxGrid6;
+
+type
+  TFrm_PembayaranHutang = class(TForm)
+    RzGroupBox1: TRzGroupBox;
+    RzPanel1: TRzPanel;
+    RzLabel1: TRzLabel;
+    RzLabel3: TRzLabel;
+    RzLabel4: TRzLabel;
+    LSupplier: TRzLabel;
+    txtsupplier: TRzButtonEdit;
+    RzPanel2: TRzPanel;
+    BtnRekam: TRzBitBtn;
+    BtnBatal: TRzBitBtn;
+    RzPanel3: TRzPanel;
+    RzPanel5: TRzPanel;
+    ZQuery1: TZQuery;
+    txtsebesar: TRzNumericEdit;
+    RzLabel2: TRzLabel;
+    txtreferensi: TRzEdit;
+    BtnCari: TRzBitBtn;
+    RzLabel6: TRzLabel;
+    RzLabel7: TRzLabel;
+    RzLabel8: TRzLabel;
+    RzLabel11: TRzLabel;
+    RzLabel5: TRzLabel;
+    RzLabel10: TRzLabel;
+    txtkas: TRzButtonEdit;
+    LKas: TRzLabel;
+    LID: TRzLabel;
+    cbgiro: TRzCheckBox;
+    txtterbilang: TRzMemo;
+    dtptanggal: TNxDatePicker;
+    dbgpembayaran: TNextGrid6;
+    NxReportGridView61: TNxReportGridView6;
+    NxTextColumn61: TNxTextColumn6;
+    NxDateColumn61: TNxDateColumn6;
+    NxNumberColumn61: TNxNumberColumn6;
+    NxNumberColumn62: TNxNumberColumn6;
+    NxNumberColumn63: TNxNumberColumn6;
+    NxNumberColumn67: TNxNumberColumn6;
+    NxNumberColumn612: TNxNumberColumn6;
+    NxNumberColumn613: TNxNumberColumn6;
+    NxDateColumn62: TNxDateColumn6;
+    NxTextColumn62: TNxTextColumn6;
+    cbapprove: TRzCheckBox;
+    cbcair: TRzCheckBox;
+    LKasTransit: TRzLabel;
+    cbcancel: TRzCheckBox;
+    procedure BtnBatalClick(Sender: TObject);
+    procedure txtsupplierButtonClick(Sender: TObject);
+    procedure dbgpembayaranAfterEdit(Sender: TObject; ACol, ARow: Integer;
+      Value: WideString);
+    procedure BtnRekamClick(Sender: TObject);
+    procedure txtsupplierKeyPress(Sender: TObject; var Key: Char);
+    procedure txtkasButtonClick(Sender: TObject);
+    procedure txtkasKeyPress(Sender: TObject; var Key: Char);
+    procedure dbgpembayaranCellDblClick(Sender: TObject; ACol,
+      ARow: Integer);
+    procedure dbgpembayaranKeyPress(Sender: TObject; var Key: Char);
+    procedure dtptanggalChange(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure UpdateTotal;
+    procedure ClearText;
+  end;
+
+var
+  Frm_PembayaranHutang: TFrm_PembayaranHutang;
+
+implementation
+
+uses UDataHutangUsaha, UDataInvoice, UDM,
+  UMain, UDataAkun, NxCells, UTransaksiGiroKeluar;
+
+{$R *.dfm}
+
+procedure TFrm_PembayaranHutang.BtnBatalClick(Sender: TObject);
+var
+   ts: TcxTabSheet;
+begin
+   ts := (Self.parent as TcxTabSheet);
+   Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_PembayaranHutang.txtsupplierButtonClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  Application.CreateForm(TFrm_DataHutangUsaha, Frm_DataHutangUsaha);
+  Frm_DataHutangUsaha.RefreshQ;
+  if Frm_DataHutangUsaha.ShowModal = mrok then begin
+    ClearText;
+    dbgpembayaran.AddRow();
+    txtsupplier.Text := Frm_DataHutangUsaha.QData.FieldValues['namakontak'];
+    LSupplier.Caption := Frm_DataHutangUsaha.QData.FieldValues['nokontak'];
+    dbgpembayaran.ClearRows;
+    with TZQuery.Create(Self)do begin
+      Connection := DM.con;
+      Close;
+      SQL.Text := 'SELECT e.*,e.totalhutang-e.jumlahretur-e.jumlahbayar AS sisahutang FROM ' +
+                  '(SELECT c.*,IFNULL(SUM(d.jumlahbayar+d.selisih),0)AS jumlahbayar FROM ' +
+                  '(SELECT a.*,IFNULL(SUM(b.total),0) AS jumlahretur FROM ' +
+                  '(SELECT nopembelianinvoice,kodepembelianinvoice,tglpembelianinvoice,nokontak,total AS totalhutang,noakunhutang,DATE_ADD(tglpembelianinvoice,INTERVAL duedate DAY) AS tgltempo FROM tbl_pembelianinvoice WHERE nokontak=:isu)AS a ' +
+                  'LEFT JOIN tbl_returpembelian AS b ON b.nopembelianinvoice=a.nopembelianinvoice GROUP BY a.nopembelianinvoice)AS c ' +
+                  'LEFT JOIN (SELECT b.nopembelianinvoice,b.jumlahbayar,b.selisih FROM ' +
+                  '(SELECT * FROM tbl_pembayaranhutang WHERE iscancel=0)AS a ' +
+                  'LEFT JOIN tbl_pembayaranhutangdetail AS b ON b.nopembayaranhutang=a.nopembayaranhutang) AS d ON d.nopembelianinvoice=c.nopembelianinvoice GROUP BY c.nopembelianinvoice)AS e ' +
+                  'where e.totalhutang-e.jumlahretur-e.jumlahbayar>0 ORDER BY e.tglpembelianinvoice';
+      ParamByName('isu').Value := LSupplier.Caption;
+      Open;
+      if not IsEmpty then begin
+        First;
+        dbgpembayaran.ClearRows;
+        for i:= 0 to RecordCount-1 do begin
+          dbgpembayaran.AddRow();
+          dbgpembayaran.Cell[0,i].AsString := FieldValues['kodepembelianinvoice'];
+          dbgpembayaran.Cell[1,i].AsDateTime := FieldValues['tglpembelianinvoice'];
+          dbgpembayaran.Cell[2,i].AsDateTime := FieldValues['tgltempo'];
+          dbgpembayaran.Cell[3,i].AsFloat := FieldValues['sisahutang'];
+          dbgpembayaran.Cell[4,i].AsFloat := 0;
+          dbgpembayaran.Cell[5,i].AsFloat := 0;
+          dbgpembayaran.Cell[6,i].AsString := '';
+          dbgpembayaran.Cell[7,i].AsInteger := FieldValues['nopembelianinvoice'];
+          //dbgpembayaran.Cell[8,i].AsInteger := akunpotonganpembelian;
+          dbgpembayaran.Cell[8,i].AsInteger := 0;
+          dbgpembayaran.Cell[9,i].AsInteger := FieldValues['noakunhutang'];
+          Next;
+        end;
+        UpdateTotal;   
+      end;
+      Free;
+    end;
+  end;
+end;
+
+procedure TFrm_PembayaranHutang.UpdateTotal;
+var
+  total:Double;
+  i:integer;
+begin
+  total := 0;
+  with dbgpembayaran do begin
+    for i:=0 to RowCount-1 do begin
+      total:=total+(Cell[4,i].AsFloat+Cell[5,i].AsFloat);
+    end;
+    txtsebesar.Value := total;
+    if total = 0 then
+      txtterbilang.Clear
+    else txtterbilang.Text := DM.ConvKeHuruf(IntToStr(txtsebesar.IntValue));
+  end;
+end;
+
+procedure TFrm_PembayaranHutang.dbgpembayaranAfterEdit(Sender: TObject;
+  ACol, ARow: Integer; Value: WideString);
+begin
+  if ACol = 4 then begin
+    if dbgpembayaran.Cell[0,ARow].AsString = '' then begin
+      dbgpembayaran.Cell[4,ARow].AsFloat := 0;
+      Exit;
+    end;
+  end else if ACol = 5 then begin
+    if dbgpembayaran.Cell[0,ARow].AsString = '' then begin
+      dbgpembayaran.Cell[5,ARow].AsFloat := 0;
+      Exit;
+    end;
+  end;
+  if dbgpembayaran.Cell[3,ARow].AsFloat-dbgpembayaran.Cell[4,ARow].AsFloat-dbgpembayaran.Cell[5,ARow].AsFloat < 0 then begin
+    dbgpembayaran.Cell[4,ARow].AsFloat := dbgpembayaran.Cell[3,ARow].AsFloat-dbgpembayaran.Cell[5,ARow].AsFloat;
+  end;
+  UpdateTotal;
+end;
+
+procedure TFrm_PembayaranHutang.ClearText;
+begin
+  LID.Caption := '0';
+  txtsupplier.Clear;
+  LSupplier.Caption := '0';
+  txtkas.Clear;
+  LKas.Caption := '0';
+  LKasTransit.Caption := '0';
+  txtreferensi.Text := DM.GenerateKodeTransaksi('CD',dtptanggal.Date);
+  dtptanggal.Date := Date;
+  dtptanggal.ReadOnly := False;
+  txtsebesar.Value := 0;
+  txtterbilang.Clear;
+  dbgpembayaran.ClearRows;
+  cbgiro.Checked := False;
+  cbgiro.Enabled := True;
+  cbapprove.Checked := False;
+  cbcair.Checked := False;
+  BtnRekam.Visible := True;
+  cbcancel.Checked := False;
+end;
+
+procedure TFrm_PembayaranHutang.BtnRekamClick(Sender: TObject);
+var
+  i,pakaigiro,noakungiro:Integer;
+  nogiro,md: string;
+  tempogiro: TDate;
+  jumlah: Double;
+begin
+  if DM.CekAkunPenting = False then begin
+    MessageDlg('Transaksi tidak dapat diproses. Cek kembali Akun Default !!',mtError,[mbOK],0);
+    Exit;
+  end;
+  if LSupplier.Caption = '0' then begin
+    MessageDlg('Supplier : harus diisi terlebih dahulu !',mtError,[mbOK],0);
+    txtsupplier.SetFocus;
+    Exit;
+  end;
+  if LKas.Caption = '0' then begin
+    MessageDlg('Kas : harus diisi terlebih dahulu !',mtError,[mbOK],0);
+    txtkas.SetFocus;
+    Exit;
+  end;
+  if dbgpembayaran.RowCount <=1  then begin
+    if dbgpembayaran.RowCount =1 then begin
+      if dbgpembayaran.Cell[0,0].AsString = '' then begin
+        MessageDlg('Tidak ada transaksi',mtError,[mbOK],0);
+        Exit;
+      end;
+    end else begin
+      MessageDlg('Tidak ada transaksi',mtError,[mbOK],0);
+      Exit;
+    end;
+  end;
+  with dbgpembayaran do begin
+    jumlah := 0;
+    for i:=0 to RowCount-1 do begin
+      jumlah := jumlah+dbgpembayaran.Cell[4,i].AsFloat;
+      if dbgpembayaran.Cell[5,i].AsFloat > 0 then begin
+        if dbgpembayaran.Cell[8,i].AsInteger = 0 then begin
+          MessageDlg('Akun selisih harus diisi!',mtError,[mbOK],0);
+          Exit;
+        end;
+      end;
+    end;
+    if jumlah = 0 then begin
+      MessageDlg('Tidak ada transaksi',mtError,[mbOK],0);
+      Exit;
+    end;
+  end;
+  {if DM.CekPeriode(dtptanggal.Date)= 0 then begin
+    MessageDlg('Anda tidak diperkenankan mengubah transaksi sebelum periode akuntansi yang sedang aktif',mtError,[mbOK],0);
+    Exit;
+  end else if DM.CekPeriode(dtptanggal.Date)= 2 then begin
+    if MessageDlg('Tanggal transaksi ini setelah periode akuntansi. Lanjutkan ?',mtConfirmation,[mbYes,mbNo],0)= mrno then begin
+      Exit;
+    end;
+  end;   }
+  if LID.Caption = '0' then begin
+    with dbgpembayaran do begin
+      with TZQuery.Create(Self)do begin
+        Connection := DM.con;
+        for i:=0 to RowCount-1 do begin
+          Close;
+          SQL.Clear;
+          SQL.Text := 'SELECT * FROM ' +
+                      '(SELECT e.*,e.totalhutang-e.jumlahretur-e.jumlahbayar AS sisahutang FROM ' +
+                      '(SELECT c.*,IFNULL(SUM(d.jumlahbayar+d.selisih),0)AS jumlahbayar FROM ' +
+                      '(SELECT a.*,IFNULL(SUM(b.total),0) AS jumlahretur FROM ' +
+                      '(SELECT nopembelianinvoice,kodepembelianinvoice,tglpembelianinvoice,nokontak,total AS totalhutang,noakunhutang,DATE_ADD(tglpembelianinvoice,INTERVAL duedate DAY) AS tgltempo FROM tbl_pembelianinvoice WHERE nokontak=:nk)AS a ' +
+                      'LEFT JOIN tbl_returpembelian AS b ON b.nopembelianinvoice=a.nopembelianinvoice GROUP BY a.nopembelianinvoice)AS c ' +
+                      'LEFT JOIN (SELECT b.nopembelianinvoice,b.jumlahbayar,b.selisih FROM ' +
+                      '(SELECT * FROM tbl_pembayaranhutang WHERE iscancel=0)AS a ' +
+                      'LEFT JOIN tbl_pembayaranhutangdetail AS b ON b.nopembayaranhutang=a.nopembayaranhutang) AS d ON d.nopembelianinvoice=c.nopembelianinvoice GROUP BY c.nopembelianinvoice)AS e ' +
+                      'where e.totalhutang-e.jumlahretur-e.jumlahbayar>0 ORDER BY e.tglpembelianinvoice)AS a WHERE a.nopembelianinvoice=:np';
+          ParamByName('nk').Value := LSupplier.Caption;
+          ParamByName('np').Value := dbgpembayaran.Cell[7,i].AsInteger;
+          Open;
+          if IsEmpty then begin
+            MessageDlg('No. Invoice '+dbgpembayaran.Cell[0,i].AsString+' telah lunas dibayar. Cek data Kembali!',mtError,[mbok],0);
+            Free;
+            Exit;
+          end;
+        end;
+        Free;
+      end;
+    end;
+    if MessageDlg('Apakah data sudah benar ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+      with TZQuery.Create(Self) do begin
+        Connection := DM.con;
+        {if cbgiro.Checked = True then begin
+          Application.CreateForm(TFrm_TransaksiGiroKeluar, Frm_TransaksiGiroKeluar);
+          Frm_TransaksiGiroKeluar.ClearText;
+          if Frm_TransaksiGiroKeluar.ShowModal = mrok then begin
+            pakaigiro := 1;
+            tempogiro := Frm_TransaksiGiroKeluar.dtptanggal.Date;
+            nogiro := Frm_TransaksiGiroKeluar.txtnomorgiro.Text;
+            noakungiro := StrToInt(Frm_TransaksiGiroKeluar.LAkunGiro.Caption);
+          end else begin
+            Free;
+            Exit;
+          end;
+        end else begin
+          pakaigiro := 0;
+        end;   }
+        Screen.Cursor := crSQLWait;
+        try
+          dm.con.StartTransaction;
+          LID.Caption := IntToStr(DM.GenerateNoMaster('pembayaranhutang'));
+          txtreferensi.Text := DM.GenerateKodeTransaksi('CD',dtptanggal.Date);
+          Close;
+          SQL.Clear;
+          SQL.Text := 'insert into tbl_referensikodetransaksi values (:a,:b,:c)';
+          ParamByName('a').Value := 'CD';
+          ParamByName('b').Value := dtptanggal.Date;
+          ParamByName('c').Value := txtreferensi.Text;
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'insert into tbl_pembayaranhutang values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j,:k,:l)';
+          ParamByName('a').Value := LID.Caption;
+          ParamByName('b').Value := txtreferensi.Text;
+          ParamByName('c').Value := LSupplier.Caption;
+          ParamByName('d').Value := FormatDateTime('yyyy-mm-dd',dtptanggal.Date);
+          ParamByName('e').Value := txtsebesar.Value;
+          ParamByName('f').Value := Frm_Main.txtuser.Caption;
+          ParamByName('g').Value := LKas.Caption;
+          ParamByName('h').Value := LKasTransit.Caption;
+          ParamByName('i').Value := pakaigiro;
+          ParamByName('j').Value := 0;
+          ParamByName('k').Value := 0;
+          ParamByName('l').Value := 0;
+          ExecSQL;
+          for i:=0 to dbgpembayaran.RowCount-1 do begin
+            if dbgpembayaran.Cell[4,i].AsFloat > 0 then begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'insert into tbl_pembayaranhutangdetail values (:a,:b,:c,:d,:e,:f)';
+              ParamByName('a').Value := LID.Caption;
+              ParamByName('b').Value := dbgpembayaran.Cell[7,i].AsInteger;
+              ParamByName('c').Value := dbgpembayaran.Cell[4,i].AsFloat;
+              ParamByName('d').Value := dbgpembayaran.Cell[5,i].AsFloat;
+              ParamByName('e').Value := dbgpembayaran.Cell[9,i].AsInteger;
+              ParamByName('f').Value := dbgpembayaran.Cell[8,i].AsInteger;
+              ExecSQL;
+            end;
+          end;
+          dm.con.Commit;
+          Screen.Cursor := crDefault;
+          {if cbgiro.Checked = True then begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'insert into tbl_giro values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j)';
+            ParamByName('a').Value := FormatDateTime('yyyy-mm-dd',dtptanggal.Date);
+            ParamByName('b').Value := LID.Caption;
+            ParamByName('c').Value := 'CD';
+            ParamByName('d').Value := nogiro;
+            ParamByName('e').Value := FormatDateTime('yyyy-mm-dd',tempogiro);
+            ParamByName('f').Value := '';
+            ParamByName('g').Value := noakungiro;
+            ParamByName('h').Value := txtsebesar.Value;
+            ParamByName('i').Value := 0;
+            ParamByName('j').Value := 'out';
+            ExecSQL;
+          end else begin
+            for i:=0 to dbgpembayaran.RowCount-1 do begin
+              DM.InsertBukuBesarAkun(dbgpembayaran.Cell[9,i].AsInteger,dtptanggal.Date,'CD',StrToInt(LID.Caption),txtketerangan.Text,dbgpembayaran.Cell[5,i].AsFloat,0);
+              if dbgpembayaran.Cell[4,i].AsFloat>0 then begin
+                DM.InsertBukuBesarAkun(dbgpembayaran.Cell[9,i].AsInteger,dtptanggal.Date,'CD',StrToInt(LID.Caption),'Potongan Pembelian'+txtsupplier.Text,dbgpembayaran.Cell[4,i].AsFloat,0);
+                DM.InsertBukuBesarAkun(dbgpembayaran.Cell[8,i].AsInteger,dtptanggal.Date,'CD',StrToInt(LID.Caption),'Potongan Pembelian'+txtsupplier.Text,0,dbgpembayaran.Cell[4,i].AsFloat);
+              end;
+            end;
+            DM.InsertBukuBesarAkun(StrToInt(LKas.Caption),dtptanggal.Date,'CD',StrToInt(LID.Caption),txtketerangan.Text,0,txtsebesar.Value);
+          end;
+          DM.InsertBukuBesarKontak(StrToInt(LSupplier.Caption),dtptanggal.Date,'CD',StrToInt(LID.Caption),txtketerangan.Text,txtsebesar.Value);  }
+          if MessageDlg('Cetak Nota ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'select * from tbl_terbilang where noreferensi=:np and tipe=:t';
+            ParamByName('np').Value := LID.Caption;
+            ParamByName('t').Value := 'CD';
+            Open;
+            if IsEmpty then begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'insert into tbl_terbilang values (:a,:b,:c)';
+              ParamByName('a').Value := LID.Caption;
+              ParamByName('b').Value := 'CD';
+              ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(txtsebesar.IntValue));
+              ExecSQL;
+            end else begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'update tbl_terbilang set terbilang=:c where noreferensi=:np and tipe=:t';
+              ParamByName('np').Value := LID.Caption;
+              ParamByName('t').Value := 'CD';
+              ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(txtsebesar.IntValue));
+              ExecSQL;
+            end;
+            dm.Q_NotaPembayaranHutang.Close;
+            DM.Q_NotaPembayaranHutang.ParamByName('np').Value := LID.Caption;
+            DM.Q_NotaPembayaranHutang.Open;
+            dm.Q_NotaTerbilang.Close;
+            DM.Q_NotaTerbilang.ParamByName('np').Value := LID.Caption;
+            DM.Q_NotaTerbilang.ParamByName('t').Value := 'CD';
+            DM.Q_NotaTerbilang.Open;
+            DM.Nota_PembayaranHutang.ShowReport(True);
+          end;
+        except
+          on E: Exception do begin
+            dm.con.Rollback;
+            MessageDlg('Error: ' + E.Message,mtWarning,[mbOk],0);
+          end;
+        end;
+        ClearText;
+        dbgpembayaran.AddRow();
+        Free;
+      end;
+    end;
+  end else begin
+    if cbcancel.Checked = False then begin
+      {if cbgiro.Enabled = False then begin
+        md := 'Transaksi ini tidak dapat dihapus/diedit karena giro telah cair!';
+        MessageDlg(md,mtWarning,[mbOK],0);
+        Free;
+        exit;
+      end;
+      if MessageDlg('Apakah data sudah benar ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+        with TZQuery.Create(Self) do begin
+          Connection := DM.con;
+          if cbgiro.Checked = True then begin
+            Application.CreateForm(TFrm_TransaksiGiroKeluar, Frm_TransaksiGiroKeluar);
+            Frm_TransaksiGiroKeluar.ClearText;
+            if Frm_TransaksiGiroKeluar.ShowModal = mrok then begin
+              pakaigiro := 1;
+              tempogiro := Frm_TransaksiGiroKeluar.dtptanggal.Date;
+              nogiro := Frm_TransaksiGiroKeluar.txtnomorgiro.Text;
+              noakungiro := StrToInt(Frm_TransaksiGiroKeluar.LAkunGiro.Caption);
+            end else begin
+              Free;
+              Exit;
+            end;
+          end else begin
+            pakaigiro := 0;
+          end;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_bukubesarakun where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'CD';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_laba where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'CD';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_giro where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'CD';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_bukubesarkontak where noreferensi=:np and tipe=:t';
+          ParamByName('np').Value := LID.Caption;
+          ParamByName('t').Value := 'CD';
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'update tbl_pembayaranhutang set nokontak=:b,tglbayar=:c,total=:d,keterangan=:e,nokas=:f,giro=:i where nopembayaranhutang=:a';
+          ParamByName('a').Value := LID.Caption;
+          ParamByName('b').Value := LSupplier.Caption;
+          ParamByName('c').Value := FormatDateTime('yyyy-mm-dd',dtptanggal.Date);
+          ParamByName('d').Value := txtsebesar.Value;
+          ParamByName('e').Value := txtketerangan.Text;
+          ParamByName('f').Value := LKas.Caption;
+          ParamByName('i').Value := pakaigiro;
+          ExecSQL;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'delete from tbl_pembayaranhutangdetail where nopembayaranhutang=:np';
+          ParamByName('np').Value := LID.Caption;
+          ExecSQL;
+          for i:=0 to dbgpembayaran.RowCount-1 do begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'insert into tbl_pembayaranhutangdetail values (:a,:b,:c,:d,:e,:f)';
+            ParamByName('a').Value := LID.Caption;
+            ParamByName('b').Value := dbgpembayaran.Cell[7,i].AsInteger;
+            ParamByName('c').Value := dbgpembayaran.Cell[5,i].AsFloat;
+            ParamByName('d').Value := dbgpembayaran.Cell[4,i].AsFloat;
+            ParamByName('e').Value := dbgpembayaran.Cell[9,i].AsInteger;
+            ParamByName('f').Value := dbgpembayaran.Cell[8,i].AsInteger;
+            ExecSQL;
+          end;
+          if cbgiro.Checked = True then begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'insert into tbl_giro values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j)';
+            ParamByName('a').Value := FormatDateTime('yyyy-mm-dd',dtptanggal.Date);
+            ParamByName('b').Value := LID.Caption;
+            ParamByName('c').Value := 'CD';
+            ParamByName('d').Value := nogiro;
+            ParamByName('e').Value := FormatDateTime('yyyy-mm-dd',tempogiro);
+            ParamByName('f').Value := '';
+            ParamByName('g').Value := noakungiro;
+            ParamByName('h').Value := txtsebesar.Value;
+            ParamByName('i').Value := 0;
+            ParamByName('j').Value := 'out';
+            ExecSQL;
+          end else begin
+            for i:=0 to dbgpembayaran.RowCount-1 do begin
+              DM.InsertBukuBesarAkun(dbgpembayaran.Cell[9,i].AsInteger,dtptanggal.Date,'CD',StrToInt(LID.Caption),txtketerangan.Text,dbgpembayaran.Cell[5,i].AsFloat,0);
+              if dbgpembayaran.Cell[4,i].AsFloat>0 then begin
+                DM.InsertBukuBesarAkun(dbgpembayaran.Cell[9,i].AsInteger,dtptanggal.Date,'CD',StrToInt(LID.Caption),'Potongan Pembelian'+txtsupplier.Text,dbgpembayaran.Cell[4,i].AsFloat,0);
+                DM.InsertBukuBesarAkun(dbgpembayaran.Cell[8,i].AsInteger,dtptanggal.Date,'CD',StrToInt(LID.Caption),'Potongan Pembelian'+txtsupplier.Text,0,dbgpembayaran.Cell[4,i].AsFloat);
+              end;
+            end;
+            DM.InsertBukuBesarAkun(StrToInt(LKas.Caption),dtptanggal.Date,'CD',StrToInt(LID.Caption),txtketerangan.Text,0,txtsebesar.Value);
+          end;
+          DM.InsertBukuBesarKontak(StrToInt(LSupplier.Caption),dtptanggal.Date,'CD',StrToInt(LID.Caption),txtketerangan.Text,txtsebesar.Value);
+          if MessageDlg('Cetak Nota ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+            Close;
+            SQL.Clear;
+            SQL.Text := 'select * from tbl_terbilang where noreferensi=:np and tipe=:t';
+            ParamByName('np').Value := LID.Caption;
+            ParamByName('t').Value := 'CD';
+            Open;
+            if IsEmpty then begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'insert into tbl_terbilang values (:a,:b,:c)';
+              ParamByName('a').Value := LID.Caption;
+              ParamByName('b').Value := 'CD';
+              ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(txtsebesar.IntValue));
+              ExecSQL;
+            end else begin
+              Close;
+              SQL.Clear;
+              SQL.Text := 'update tbl_terbilang set terbilang=:c where noreferensi=:np and tipe=:t';
+              ParamByName('np').Value := LID.Caption;
+              ParamByName('t').Value := 'CD';
+              ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(txtsebesar.IntValue));
+              ExecSQL;
+            end;
+            dm.Q_NotaPembayaranHutang.Close;
+            DM.Q_NotaPembayaranHutang.ParamByName('np').Value := LID.Caption;
+            DM.Q_NotaPembayaranHutang.Open;
+            dm.Q_NotaTerbilang.Close;
+            DM.Q_NotaTerbilang.ParamByName('np').Value := LID.Caption;
+            DM.Q_NotaTerbilang.ParamByName('t').Value := 'CD';
+            DM.Q_NotaTerbilang.Open;
+            DM.Nota_PembayaranHutang.ShowReport(True);
+          end;
+          ClearText;
+          dbgpembayaran.AddRow();
+          Free;
+        end;
+      end;    }
+    end;
+  end;
+end;
+
+procedure TFrm_PembayaranHutang.txtsupplierKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtsupplierButtonClick(nil);
+end;
+
+procedure TFrm_PembayaranHutang.txtkasButtonClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+  akunkas := 1;
+  Frm_DataAkun.RefreshQ;
+  if Frm_DataAkun.ShowModal = mrok then begin
+    LKas.Caption := Frm_DataAkun.QData.FieldValues['noakun'];
+    txtkas.Text := Frm_DataAkun.QData.FieldValues['namaakun'];
+    if (Frm_DataAkun.QData.FieldValues['noklasifikasi'] = 1) and (Frm_DataAkun.QData.FieldValues['nosubklasifikasi'] = 1) then begin
+      LKasTransit.Caption := IntToStr(kasintransit);
+    end else if (Frm_DataAkun.QData.FieldValues['noklasifikasi'] = 1) and (Frm_DataAkun.QData.FieldValues['nosubklasifikasi'] = 2) then begin
+      LKasTransit.Caption := IntToStr(depositintransit);
+    end;
+  end;
+end;
+
+procedure TFrm_PembayaranHutang.txtkasKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtkasButtonClick(nil);
+end;
+
+procedure TFrm_PembayaranHutang.dbgpembayaranCellDblClick(Sender: TObject;
+  ACol, ARow: Integer);
+var
+  i:Integer;
+begin
+  if ACol = 6 then begin
+    Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+    akunkas := -1;
+    noklas := 0;
+    nosubklas := 0;
+    Frm_DataAkun.RefreshQ;
+    if Frm_DataAkun.ShowModal = mrok then begin
+      i := dbgpembayaran.SelectedRow;
+      dbgpembayaran.Cell[6,i].AsString := Frm_DataAkun.QData.FieldValues['namaakun'];
+      dbgpembayaran.Cell[8,i].AsInteger := Frm_DataAkun.QData.FieldValues['noakun'];
+    end;
+  end;
+end;
+
+procedure TFrm_PembayaranHutang.dbgpembayaranKeyPress(Sender: TObject;
+  var Key: Char);
+var
+  i:Integer;
+begin
+  if dbgpembayaran.SelectedCol = 6 then begin
+    if (key in['0'..'9',#8,#13,#32]) or (key in['a'..'z','A'..'Z',#8,#13,#32]) then begin
+      Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+      akunkas := -1;
+      noklas := 0;
+      nosubklas := 0;
+      Frm_DataAkun.RefreshQ;
+      if Frm_DataAkun.ShowModal = mrok then begin
+        i := dbgpembayaran.SelectedRow;
+        dbgpembayaran.Cell[6,i].AsString := Frm_DataAkun.QData.FieldValues['namaakun'];
+        dbgpembayaran.Cell[8,i].AsInteger := Frm_DataAkun.QData.FieldValues['noakun'];
+      end;
+    end;
+  end;
+end;
+
+procedure TFrm_PembayaranHutang.dtptanggalChange(Sender: TObject);
+begin
+  if LID.Caption = '0' then txtreferensi.Text := DM.GenerateKodeTransaksi('CD',dtptanggal.Date);
+end;
+
+end.

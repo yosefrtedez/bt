@@ -1,0 +1,262 @@
+unit UAssembly;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, RzLabel, DB, ZAbstractRODataset, ZAbstractDataset,
+  ZDataset, RzButton, NxColumnClasses, NxColumns, NxScrollControl,
+  NxCustomGridControl, NxCustomGrid, NxGrid, ExtCtrls, RzPanel, ComCtrls,
+  RzDTP, cxPC;
+
+type
+  TFrm_Assembly = class(TForm)
+    RzPanel1: TRzPanel;
+    dbgbarang: TNextGrid;
+    NxTextColumn2: TNxTextColumn;
+    NxTextColumn3: TNxTextColumn;
+    nobarang: TNxNumberColumn;
+    RzPanel2: TRzPanel;
+    BtnProses: TRzBitBtn;
+    BtnBatal: TRzBitBtn;
+    QBarang: TZQuery;
+    NxNumberColumn3: TNxNumberColumn;
+    NxNumberColumn4: TNxNumberColumn;
+    NxNumberColumn5: TNxNumberColumn;
+    noakun: TNxNumberColumn;
+    Q1: TZQuery;
+    NxTextColumn1: TNxTextColumn;
+    LGudang: TRzLabel;
+    BtnGudang: TRzToolButton;
+    procedure FormShow(Sender: TObject);
+    procedure BtnBatalClick(Sender: TObject);
+    procedure BtnProsesClick(Sender: TObject);
+    procedure dbgbarangAfterEdit(Sender: TObject; ACol, ARow: Integer;
+      Value: WideString);
+    procedure BtnGudangClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure RefreshQ;
+    procedure UpdateTotal;
+  end;
+
+var
+  Frm_Assembly: TFrm_Assembly;
+  total : Double;
+
+implementation
+
+uses UDM, NxCells, UMain, UDataGudang;
+
+{$R *.dfm}
+
+{ TFrm_Produksi }
+
+procedure TFrm_Assembly.RefreshQ;
+var
+  i:Integer;
+begin
+  QBarang.Close;
+  QBarang.ParamByName('ng').Value := LGudang.Caption;
+  QBarang.Open;
+  if not QBarang.IsEmpty then begin
+    QBarang.First;
+    for i:=0 to QBarang.RecordCount-1 do begin
+      with dbgbarang do begin
+        AddRow();
+        Cell[0,i].AsString := QBarang.FieldValues['kodebarang'];
+        Cell[1,i].AsString := QBarang.FieldValues['namabarang'];
+        Cell[2,i].AsString := QBarang.FieldValues['kodesatuan'];
+        Cell[3,i].AsFloat := QBarang.FieldValues['stok'];
+        Cell[4,i].AsFloat := 0;
+        Cell[5,i].AsFloat := Cell[4,i].AsFloat+Cell[3,i].AsFloat;
+        Cell[6,i].AsInteger := QBarang.FieldValues['nobarang'];
+        Cell[7,i].AsInteger := QBarang.FieldValues['noakunpersediaan'];
+      end;
+      QBarang.Next;
+    end;
+  end;
+  UpdateTotal;
+end;
+
+procedure TFrm_Assembly.FormShow(Sender: TObject);
+begin
+  dbgbarang.ClearRows;
+  RefreshQ;
+end;
+
+procedure TFrm_Assembly.BtnBatalClick(Sender: TObject);
+var
+   ts: TcxTabSheet;
+begin
+   ts := (Self.parent as TcxTabSheet);
+   Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_Assembly.BtnProsesClick(Sender: TObject);
+var
+  i,j,nopemindahan:Integer;
+  hpptotal,hppbarang:Double;
+  referensi:string;
+begin
+  if dbgbarang.RowCount <= 0 then Exit;
+  if total = 0 then begin
+    MessageDlg('Tidak ada produksi !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if MessageDlg('Apakah data sudah benar ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+    with TZQuery.Create(Self) do begin
+      Connection := DM.con;
+      for i:=0 to dbgbarang.RowCount-1 do begin
+        if dbgbarang.Cell[4,i].AsFloat > 0 then begin
+          Close;
+          SQL.Clear;
+          SQL.Text := 'select * from tbl_barangrakitan where nobarang=:nb';
+          ParamByName('nb').Value := dbgbarang.Cell[6,i].AsInteger;
+          Open;
+          First;
+          for j:=0 to RecordCount-1 do begin
+            if DM.CekStok(FieldValues['nobahan'],StrToInt(LGudang.Caption),dbgbarang.Cell[4,i].AsFloat*FieldValues['qty'])=False then begin
+              MessageDlg('Bahan untuk assembly kurang!, '+dbgbarang.Cell[1,i].AsString,mtError,[mbOK],0);
+              Free;
+              Exit;
+            end;
+            Next;
+          end;
+        end;
+      end;
+      referensi := DM.GenerateKodeTransaksi('MV',Date);
+      nopemindahan := DM.GenerateNoMaster('pemindahan');
+      Close;
+      SQL.Clear;
+      SQL.Text := 'insert into tbl_referensikodetransaksi values (:a,:b,:c)';
+      ParamByName('a').Value := 'MV';
+      ParamByName('b').Value := Date;
+      ParamByName('c').Value := referensi;
+      ExecSQL;
+      Close;
+      // masuk ke tabel pemindahan
+      SQL.Clear;
+      SQL.Text := 'insert into tbl_pemindahan values (:a,:b,:c,:d,:e,:f,:g,:h)';
+      ParamByName('a').Value := nopemindahan;
+      ParamByName('b').Value := referensi;
+      ParamByName('c').Value := Date;
+      ParamByName('d').Value := 'Assembly';
+      ParamByName('e').Value := LGudang.Caption;
+      ParamByName('f').Value := Frm_Main.txtuser.Caption;
+      ParamByName('g').Value := 1;
+      ParamByName('h').Value := 1;
+      ExecSQL;
+      for i:=0 to dbgbarang.RowCount-1 do begin
+        if dbgbarang.Cell[4,i].AsFloat > 0 then begin
+          hpptotal := 0;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'select a.*,b.noakunpersediaan as noakun from ' +
+                      '(select * from tbl_barangrakitan where nobarang=:nb)as a ' +
+                      'left join tbl_barang as b on b.nobarang=a.nobahan';
+          ParamByName('nb').Value := dbgbarang.Cell[6,i].AsInteger;
+          Open;
+          First;
+          for j:=0 to RecordCount-1 do begin
+            hppbarang := 0;
+            hppbarang := DM.HitungHPPPenjualan(FieldValues['nobahan'],dbgbarang.Cell[4,i].AsFloat*FieldValues['qty']);
+            hpptotal := hpptotal+hppbarang;
+            Q1.Close;
+            Q1.SQL.Clear;
+            //masuk tabel detil pemindahan
+            Q1.SQL.Text := 'insert into tbl_pemindahandetail values(:a,:b,:c,:d,:e,:f)';
+            Q1.ParamByName('a').Value := nopemindahan;
+            Q1.ParamByName('b').Value := FieldValues['nobahan'];
+            Q1.ParamByName('c').Value := -1*(dbgbarang.Cell[4,i].AsFloat*FieldValues['qty']);
+            Q1.ParamByName('d').Value := hppbarang;
+            Q1.ParamByName('e').Value := -1*(dbgbarang.Cell[4,i].AsFloat*FieldValues['qty'])*hppbarang;
+            Q1.ParamByName('f').Value := FieldValues['noakun'];
+            Q1.ExecSQL;
+            Q1.Close;
+            Q1.SQL.Clear;
+            //masuk tabel buku besar barang
+            Q1.SQL.Text := 'insert into tbl_bukubesarbarang(nobuku,nobarang,tipe,nogudang,tgltransaksi,noreferensi,keterangan,keluar,hpp,hargajual) values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j)';
+            //Q1.ParamByName('a').Value := DM.GenerateNoMaster('bukubarang');
+            Q1.ParamByName('b').Value := FieldValues['nobahan'];
+            Q1.ParamByName('c').Value := 'MV';
+            Q1.ParamByName('d').Value := LGudang.Caption;
+            Q1.ParamByName('e').Value := Date;
+            Q1.ParamByName('f').Value := nopemindahan;
+            Q1.ParamByName('g').Value := 'Assembly';
+            Q1.ParamByName('h').Value := dbgbarang.Cell[4,i].AsFloat*FieldValues['qty'];
+            Q1.ParamByName('i').Value := hppbarang;
+            Q1.ParamByName('j').Value := 0;
+            Q1.ExecSQL;
+            dm.AmbilNoBuku(FieldValues['nobahan'],StrToInt(LGudang.Caption),dbgbarang.Cell[4,i].AsFloat*FieldValues['qty'],nopemindahan,'MV');
+
+            Next;
+          end;
+          Close;
+          SQL.Clear;
+          //masuk tabel detil pemindahan
+          SQL.Text := 'insert into tbl_pemindahandetail values(:a,:b,:c,:d,:e,:f)';
+          ParamByName('a').Value := nopemindahan;
+          ParamByName('b').Value := dbgbarang.Cell[6,i].AsInteger;
+          ParamByName('c').Value := dbgbarang.Cell[4,i].AsFloat;
+          ParamByName('d').Value := hpptotal;
+          ParamByName('e').Value := hpptotal*dbgbarang.Cell[4,i].AsFloat;
+          ParamByName('f').Value := dbgbarang.Cell[7,i].AsInteger;
+          ExecSQL;
+          DM.HitungHPPAverage(dbgbarang.Cell[6,i].AsInteger,dbgbarang.Cell[4,i].AsFloat,hpptotal);
+          Close;
+          SQL.Clear;
+          //masuk tabel buku besar barang
+          SQL.Text := 'insert into tbl_bukubesarbarang(nobuku,nobarang,tipe,nogudang,tgltransaksi,noreferensi,keterangan,masuk,hpp) values (:a,:b,:c,:d,:e,:f,:g,:h,:i)';
+          //ParamByName('a').Value := DM.GenerateNoMaster('bukubarang');
+          ParamByName('b').Value := dbgbarang.Cell[6,i].AsInteger;
+          ParamByName('c').Value := 'MV';
+          ParamByName('d').Value := LGudang.Caption;
+          ParamByName('e').Value := Date;
+          ParamByName('f').Value := nopemindahan;
+          ParamByName('g').Value := 'Assembly';
+          ParamByName('h').Value := dbgbarang.Cell[4,i].AsFloat;
+          ParamByName('i').Value := hpptotal;
+          ExecSQL;
+        end;
+      end;
+      Free;
+    end;
+    RefreshQ;
+  end;          
+end;
+
+procedure TFrm_Assembly.dbgbarangAfterEdit(Sender: TObject; ACol,
+  ARow: Integer; Value: WideString);
+begin
+  if ACol = 4 then begin
+    if dbgbarang.Cell[4,ARow].AsFloat < 0 then dbgbarang.Cell[4,ARow].AsFloat := 0;
+    dbgbarang.Cell[5,ARow].AsFloat := dbgbarang.Cell[3,ARow].AsFloat+dbgbarang.Cell[4,ARow].AsFloat;
+    UpdateTotal;
+  end
+end;
+
+procedure TFrm_Assembly.UpdateTotal;
+var
+  i:Integer;
+begin
+  total := 0;
+  with dbgbarang do begin
+    for i:=0 to RowCount-1 do begin
+      total:=total+Cell[4,i].AsFloat;
+    end;
+  end;
+end;
+
+procedure TFrm_Assembly.BtnGudangClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataGudang, Frm_DataGudang);
+  Frm_DataGudang.RefreshQ;
+  if Frm_DataGudang.ShowModal = mrok then begin
+    LGudang.Caption := Frm_DataGudang.QData.FieldValues['nogudang'];
+  end;
+end;
+
+end.

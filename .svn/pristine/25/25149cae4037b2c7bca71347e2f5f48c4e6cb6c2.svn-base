@@ -1,0 +1,292 @@
+object Frm_DataOrderPembelianDetail: TFrm_DataOrderPembelianDetail
+  Left = 315
+  Top = 21
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'Detil Order Pembelian'
+  ClientHeight = 749
+  ClientWidth = 833
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 833
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Detail Order Pembelian'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 0
+    object BtnUpdate: TRzToolButton
+      Left = 755
+      Top = 0
+      Width = 78
+      ImageIndex = 1
+      Images = DM.IL16
+      ShowCaption = True
+      UseToolbarShowCaption = False
+      Align = alRight
+      Caption = 'Update'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      OnClick = BtnUpdateClick
+    end
+  end
+  object RzPanel3: TRzPanel
+    Left = 0
+    Top = 708
+    Width = 833
+    Height = 41
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 1
+    DesignSize = (
+      833
+      41)
+    object BtnOk: TRzBitBtn
+      Left = 753
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Ok'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnOkClick
+    end
+  end
+  object dbgdata: TcxGrid
+    Left = 0
+    Top = 25
+    Width = 833
+    Height = 683
+    Align = alClient
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 2
+    LookAndFeel.Kind = lfOffice11
+    LookAndFeel.NativeStyle = False
+    LookAndFeel.SkinName = 'Blue'
+    object dbgdataDBTableView1: TcxGridDBTableView
+      NavigatorButtons.ConfirmDelete = False
+      DataController.DataSource = DSData
+      DataController.Filter.Options = [fcoCaseInsensitive]
+      DataController.Filter.Active = True
+      DataController.Summary.DefaultGroupSummaryItems = <>
+      DataController.Summary.FooterSummaryItems = <>
+      DataController.Summary.SummaryGroups = <>
+      FilterRow.Visible = True
+      OptionsData.CancelOnExit = False
+      OptionsData.Deleting = False
+      OptionsData.DeletingConfirmation = False
+      OptionsData.Editing = False
+      OptionsData.Inserting = False
+      OptionsSelection.CellSelect = False
+      OptionsView.ColumnAutoWidth = True
+      OptionsView.GridLines = glHorizontal
+      object dbgdataDBTableView1kodebarang: TcxGridDBColumn
+        Caption = 'Kode'
+        DataBinding.FieldName = 'kodebarang'
+        HeaderAlignmentHorz = taCenter
+        Width = 97
+      end
+      object dbgdataDBTableView1namabarang: TcxGridDBColumn
+        Caption = 'Nama'
+        DataBinding.FieldName = 'namabarang'
+        HeaderAlignmentHorz = taCenter
+        Width = 226
+      end
+      object dbgdataDBTableView1qty: TcxGridDBColumn
+        Caption = 'Qty'
+        DataBinding.FieldName = 'qty'
+        HeaderAlignmentHorz = taCenter
+        Width = 68
+      end
+      object dbgdataDBTableView1kodesatuan: TcxGridDBColumn
+        Caption = 'Satuan'
+        DataBinding.FieldName = 'kodesatuan'
+        HeaderAlignmentHorz = taCenter
+        Width = 84
+      end
+      object dbgdataDBTableView1harga: TcxGridDBColumn
+        Caption = 'Harga'
+        DataBinding.FieldName = 'harga'
+        HeaderAlignmentHorz = taCenter
+        Width = 66
+      end
+      object dbgdataDBTableView1diskon1: TcxGridDBColumn
+        Caption = 'Disc. %'
+        DataBinding.FieldName = 'diskon1'
+        HeaderAlignmentHorz = taCenter
+        Width = 73
+      end
+      object dbgdataDBTableView1diskon2: TcxGridDBColumn
+        Caption = 'Disc.'
+        DataBinding.FieldName = 'diskon2'
+        HeaderAlignmentHorz = taCenter
+        Width = 56
+      end
+      object dbgdataDBTableView1subtotal: TcxGridDBColumn
+        Caption = 'Subtotal'
+        DataBinding.FieldName = 'subtotal'
+        HeaderAlignmentHorz = taCenter
+        Width = 80
+      end
+      object dbgdataDBTableView1kodepajak: TcxGridDBColumn
+        Caption = 'PPN'
+        DataBinding.FieldName = 'kodepajak'
+        HeaderAlignmentHorz = taCenter
+        Width = 81
+      end
+    end
+    object dbgdataLevel1: TcxGridLevel
+      GridView = dbgdataDBTableView1
+    end
+  end
+  object QData: TZQuery
+    Connection = DM.con
+    SQL.Strings = (
+      'select a.*,ifnull(b.kodepajak,'#39'-'#39')as kodepajak from '
+      '                    (select c.*,d.kodesatuan from '
+      '                    (select a.*,b.kodebarang,b.namabarang from '
+      
+        '                    (select * from tbl_pembelianorderdetail wher' +
+        'e nopembelianorder=:np)as a'
+      
+        '                    left join tbl_barang as b on b.nobarang=a.no' +
+        'barang) as c '
+      
+        '                    left join tbl_satuan as d on d.nosatuan=c.no' +
+        'satuan)as a '
+      
+        '                    left join tbl_pajak as b on b.nopajak=a.nopa' +
+        'jak')
+    Params = <
+      item
+        DataType = ftUnknown
+        Name = 'np'
+        ParamType = ptUnknown
+      end>
+    Left = 48
+    Top = 104
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'np'
+        ParamType = ptUnknown
+      end>
+    object QDatanopembelianorder: TLargeintField
+      FieldName = 'nopembelianorder'
+      ReadOnly = True
+    end
+    object QDatanobarang: TLargeintField
+      FieldName = 'nobarang'
+      ReadOnly = True
+    end
+    object QDataqty: TFloatField
+      FieldName = 'qty'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDataharga: TFloatField
+      FieldName = 'harga'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDatadiskon1: TFloatField
+      FieldName = 'diskon1'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDatadiskon2: TFloatField
+      FieldName = 'diskon2'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDatasubtotal: TFloatField
+      FieldName = 'subtotal'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDatanosatuan: TLargeintField
+      FieldName = 'nosatuan'
+      ReadOnly = True
+    end
+    object QDatanilai: TFloatField
+      FieldName = 'nilai'
+      ReadOnly = True
+    end
+    object QDatadppbarang: TFloatField
+      FieldName = 'dppbarang'
+      ReadOnly = True
+    end
+    object QDatappnbarang: TFloatField
+      FieldName = 'ppnbarang'
+      ReadOnly = True
+    end
+    object QDatanopajak: TLargeintField
+      FieldName = 'nopajak'
+      Required = True
+    end
+    object QDatatipepajak: TSmallintField
+      FieldName = 'tipepajak'
+    end
+    object QDatapersenpajak: TFloatField
+      FieldName = 'persenpajak'
+      ReadOnly = True
+    end
+    object QDatakodebarang: TStringField
+      FieldName = 'kodebarang'
+      ReadOnly = True
+      Size = 15
+    end
+    object QDatanamabarang: TStringField
+      FieldName = 'namabarang'
+      ReadOnly = True
+      Size = 100
+    end
+    object QDatakodesatuan: TStringField
+      FieldName = 'kodesatuan'
+      ReadOnly = True
+      Size = 50
+    end
+    object QDatakodepajak: TStringField
+      FieldName = 'kodepajak'
+      ReadOnly = True
+      Size = 15
+    end
+  end
+  object DSData: TDataSource
+    DataSet = QData
+    Left = 48
+    Top = 136
+  end
+end

@@ -1,0 +1,229 @@
+object Frm_DaftarCA: TFrm_DaftarCA
+  Left = 192
+  Top = 117
+  Align = alClient
+  BorderStyle = bsNone
+  Caption = 'Daftar Cash Advance'
+  ClientHeight = 636
+  ClientWidth = 1289
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  OldCreateOrder = False
+  WindowState = wsMaximized
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel1: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 1289
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Daftar Cash Advance'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 0
+    object BtnUpdate: TRzToolButton
+      Left = 1211
+      Top = 0
+      Width = 78
+      ImageIndex = 1
+      Images = DM.IL16
+      ShowCaption = True
+      UseToolbarShowCaption = False
+      Align = alRight
+      Caption = 'Update'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      OnClick = BtnUpdateClick
+    end
+  end
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 595
+    Width = 1289
+    Height = 41
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 1
+    DesignSize = (
+      1289
+      41)
+    object BtnSelesai: TRzBitBtn
+      Left = 1201
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Keluar'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
+      OnClick = BtnSelesaiClick
+    end
+    object BtnPerincian: TRzBitBtn
+      Left = 1121
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Perincian'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnPerincianClick
+    end
+    object BtnNew: TRzBitBtn
+      Left = 16
+      Top = 8
+      Caption = 'Baru'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnNewClick
+    end
+  end
+  object dbgdata: TcxGrid
+    Left = 0
+    Top = 25
+    Width = 1289
+    Height = 570
+    Align = alClient
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 2
+    LookAndFeel.Kind = lfOffice11
+    LookAndFeel.NativeStyle = False
+    LookAndFeel.SkinName = 'Blue'
+    object dbgdataDBTableView1: TcxGridDBTableView
+      OnDblClick = dbgdataDBTableView1DblClick
+      NavigatorButtons.ConfirmDelete = False
+      DataController.DataSource = DSData
+      DataController.Filter.Options = [fcoCaseInsensitive]
+      DataController.Filter.Active = True
+      DataController.Summary.DefaultGroupSummaryItems = <>
+      DataController.Summary.FooterSummaryItems = <>
+      DataController.Summary.SummaryGroups = <>
+      FilterRow.Visible = True
+      OptionsData.CancelOnExit = False
+      OptionsData.Deleting = False
+      OptionsData.DeletingConfirmation = False
+      OptionsData.Editing = False
+      OptionsData.Inserting = False
+      OptionsSelection.CellSelect = False
+      OptionsView.ColumnAutoWidth = True
+      OptionsView.GridLines = glHorizontal
+      object dbgdataDBTableView1namakontak: TcxGridDBColumn
+        Caption = 'Nama'
+        DataBinding.FieldName = 'namakontak'
+        HeaderAlignmentHorz = taCenter
+        Width = 458
+      end
+      object dbgdataDBTableView1totalhutang: TcxGridDBColumn
+        Caption = 'Total'
+        DataBinding.FieldName = 'totalhutang'
+        HeaderAlignmentHorz = taCenter
+        Options.Filtering = False
+        Width = 154
+      end
+      object dbgdataDBTableView1jumlahbayar: TcxGridDBColumn
+        Caption = 'Terbayar'
+        DataBinding.FieldName = 'jumlahbayar'
+        HeaderAlignmentHorz = taCenter
+        Options.Filtering = False
+        Width = 154
+      end
+      object dbgdataDBTableView1sisahutang: TcxGridDBColumn
+        Caption = 'Saldo'
+        DataBinding.FieldName = 'sisahutang'
+        HeaderAlignmentHorz = taCenter
+        Options.Filtering = False
+        Width = 151
+      end
+    end
+    object dbgdataLevel1: TcxGridLevel
+      GridView = dbgdataDBTableView1
+    end
+  end
+  object QData: TZQuery
+    Connection = DM.con
+    AutoCalcFields = False
+    SQL.Strings = (
+      'SELECT f.*,g.namakontak FROM '
+      '(SELECT h.* FROM '
+      
+        '(SELECT e.nokontak,SUM(e.totalloan)AS totalloan,SUM(e.jumlahbaya' +
+        'r)AS jumlahbayar,SUM(e.totalloan)-SUM(e.jumlahbayar) AS sisaloan' +
+        ' FROM '
+      '(SELECT gg.* FROM'
+      '(SELECT a.*,IFNULL(SUM(b.total),0) AS jumlahbayar FROM '
+      
+        '(SELECT noloan,nokontak,total AS totalloan FROM tbl_loan WHERE a' +
+        'pprove=1)AS a '
+      
+        'LEFT JOIN tbl_pembayaranloan AS b ON b.noloan=a.noloan GROUP BY ' +
+        'a.noloan)AS gg WHERE gg.totalloan-gg.jumlahbayar>0)AS e '
+      'GROUP BY e.nokontak)AS h WHERE h.sisaloan>0)AS f '
+      'LEFT JOIN tbl_kontak AS g ON g.nokontak=f.nokontak')
+    Params = <>
+    Left = 816
+    Top = 88
+    object QDatajumlahbayar: TFloatField
+      FieldName = 'jumlahbayar'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDatanokontak: TLargeintField
+      FieldName = 'nokontak'
+      Required = True
+    end
+    object QDatanamakontak: TStringField
+      FieldName = 'namakontak'
+      Size = 100
+    end
+    object QDatatotalloan: TFloatField
+      FieldName = 'totalloan'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+    object QDatasisaloan: TFloatField
+      FieldName = 'sisaloan'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+  end
+  object DSData: TDataSource
+    DataSet = QData
+    Left = 844
+    Top = 88
+  end
+end

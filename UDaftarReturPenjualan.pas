@@ -1,0 +1,363 @@
+unit UDaftarReturPenjualan;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, frxClass, frxDBSet, ZAbstractRODataset, ZAbstractDataset,
+  ZDataset, Grids, DBGrids, SMDBGrid, RzButton, StdCtrls, Mask, RzEdit,
+  RzLabel, ExtCtrls, RzPanel, cxPC, cxGraphics, cxControls, cxLookAndFeels,
+  cxLookAndFeelPainters, cxStyles, dxSkinsCore, dxSkinBlack, dxSkinBlue,
+  dxSkinCaramel, dxSkinCoffee, dxSkinDarkRoom, dxSkinDarkSide, dxSkinFoggy,
+  dxSkinGlassOceans, dxSkiniMaginary, dxSkinLilian, dxSkinLiquidSky,
+  dxSkinLondonLiquidSky, dxSkinMcSkin, dxSkinMoneyTwins,
+  dxSkinOffice2007Black, dxSkinOffice2007Blue, dxSkinOffice2007Green,
+  dxSkinOffice2007Pink, dxSkinOffice2007Silver, dxSkinOffice2010Black,
+  dxSkinOffice2010Blue, dxSkinOffice2010Silver, dxSkinPumpkin, dxSkinSeven,
+  dxSkinSharp, dxSkinSilver, dxSkinSpringTime, dxSkinStardust,
+  dxSkinSummer2008, dxSkinsDefaultPainters, dxSkinValentine,
+  dxSkinXmas2008Blue, dxSkinscxPCPainter, cxCustomData, cxFilter, cxData,
+  cxDataStorage, cxEdit, cxDBData, cxCheckBox, cxGridLevel,
+  cxGridCustomTableView, cxGridTableView, cxGridDBTableView, cxClasses,
+  cxGridCustomView, cxGrid;
+
+type
+  TFrm_DaftarReturPenjualan = class(TForm)
+    RzPanel1: TRzPanel;
+    RzPanel2: TRzPanel;
+    BtnSelesai: TRzBitBtn;
+    BtnHapus: TRzBitBtn;
+    QData: TZQuery;
+    DSData: TDataSource;
+    Q1: TZQuery;
+    QDatatotal: TFloatField;
+    QDatatgltransaksi: TDateField;
+    BtnPerincian: TRzBitBtn;
+    QDatanokontak: TLargeintField;
+    QDatanamakontak: TStringField;
+    QDatanoreturpenjualan: TLargeintField;
+    QDatakodereturpenjualan: TStringField;
+    dbgdata: TcxGrid;
+    dbgdataDBTableView1: TcxGridDBTableView;
+    dbgdataDBTableView1tgltransaksi: TcxGridDBColumn;
+    dbgdataDBTableView1kodepenjualan: TcxGridDBColumn;
+    dbgdataDBTableView1namakontak: TcxGridDBColumn;
+    dbgdataDBTableView1totalpajak: TcxGridDBColumn;
+    dbgdataDBTableView1total: TcxGridDBColumn;
+    dbgdataLevel1: TcxGridLevel;
+    BtnUpdate: TRzToolButton;
+    BtnFilter: TRzToolButton;
+    QDatatotalppn: TFloatField;
+    RzBitBtn2: TRzBitBtn;
+    RzBitBtn1: TRzBitBtn;
+    QDatanopenjualaninvoice: TLargeintField;
+    QDatakodepenjualaninvoice: TStringField;
+    dbgdataDBTableView1kodepenjualaninvoice: TcxGridDBColumn;
+    procedure BtnSelesaiClick(Sender: TObject);
+    procedure BtnHapusClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure BtnFilterClick(Sender: TObject);
+    procedure BtnPerincianClick(Sender: TObject);
+    procedure BtnUpdateClick(Sender: TObject);
+    procedure dbgdataDBTableView1DblClick(Sender: TObject);
+    procedure RzBitBtn1Click(Sender: TObject);
+    procedure RzBitBtn2Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure RefreshQ;
+  end;
+
+var
+  Frm_DaftarReturPenjualan: TFrm_DaftarReturPenjualan;
+  datedari,datesampai:string;
+
+implementation
+
+uses UReturPenjualan, UDM, UFTanggal, UMain;
+
+{$R *.dfm}
+
+procedure TFrm_DaftarReturPenjualan.BtnSelesaiClick(Sender: TObject);
+var
+   ts: TcxTabSheet;
+begin
+   ts := (Self.parent as TcxTabSheet);
+   Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_DaftarReturPenjualan.RefreshQ;
+begin
+  with QData do begin
+    Close;
+    ParamByName('tkd').Value := datedari;
+    ParamByName('tks').Value := datesampai;
+    Open;
+  end;
+end;
+
+procedure TFrm_DaftarReturPenjualan.BtnHapusClick(Sender: TObject);
+var
+  i:Integer;
+begin
+  if QData.IsEmpty then Exit;
+  {if DM.CekPeriode(QPembelian.FieldValues['tgltransaksi'])=0 then begin
+    MessageDlg('Anda tidak diperkenankan mengubah transaksi sebelum periode akuntansi yang sedang aktif',mtError,[mbOK],0);
+    Exit;
+  end;         }
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Penjualan11')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  with TZQuery.Create(Self)do begin
+    Connection := DM.Con;
+    Close;
+    SQL.Clear;
+    SQL.Text := 'select a.*,ifnull(sum(b.qty),0)as terjual from ' +
+                '(select * from tbl_bukubesarbarang where noreferensi=:a and tipe=:t)as a ' +
+                'left join tbl_bukubesarbarangdetail as b on b.nobuku=a.nobuku group by a.nobuku';
+    ParamByName('a').Value := QData.FieldValues['noreturpenjualan'];
+    ParamByName('t').Value := 'SR';
+    Open;
+    First;
+    for i:=0 to RecordCount-1 do begin
+      if FieldValues['terjual']=0 then begin
+        Next;
+      end else begin
+        MessageDlg('Transaksi tidak dapat dihapus, karena barang telah terpakai oleh transaksi lain'#10#13'Hapus dulu transaksi penjualan atau penyesuaian yang menggunakan barang yang berasal dari Transaksi ini.',mtError,[mbOK],0);
+        Free;
+        Exit;
+      end;
+    end;
+    if MessageDlg('Hapus transaksi ?'#10#13'Perhatian: Perubahan setelah dihapus tidak bisa dibatalkan/dikembalikan!',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+      with TZQuery.Create(Self)do begin
+        Connection := DM.con;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'delete from tbl_bukubesarbarang where noreferensi=:np and tipe=:t';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        ParamByName('t').Value := 'SR';
+        ExecSQL;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'delete from tbl_bukubesarakun where noreferensi=:np and tipe=:t';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        ParamByName('t').Value := 'SR';
+        ExecSQL;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'delete from tbl_laba where noreferensi=:np and tipe=:t';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        ParamByName('t').Value := 'SR';
+        ExecSQL;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'delete from tbl_bukubesarkontak where noreferensi=:np and tipe=:t';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        ParamByName('t').Value := 'SR';
+        ExecSQL;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'delete from tbl_returpenjualan where noreturpenjualan=:np';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        ExecSQL;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'delete from tbl_returpenjualandetail where noreturpenjualan=:np';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        ExecSQL;
+        Free;
+      end;
+      RefreshQ;
+    end;
+    RefreshQ;
+    Free;
+  end;
+end;
+
+procedure TFrm_DaftarReturPenjualan.FormShow(Sender: TObject);
+begin
+  datedari := FormatDateTime('yyyy-mm-dd',DM.FDOM(Date));
+  datesampai := FormatDateTime('yyyy-mm-dd',DM.LastDayCurrMon(Date));
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarReturPenjualan.BtnFilterClick(Sender: TObject);
+begin
+  Application.CreateForm(TFTanggal, FTanggal);
+  with FTanggal do begin
+    if ShowModal=mrok then begin
+      datedari := FormatDateTime('yyyy-mm-dd',FTanggal.dtpdari.Date);
+      datesampai := FormatDateTime('yyyy-mm-dd',FTanggal.dtpsampai.Date);
+      RefreshQ;
+    end;
+  end;
+end;
+
+procedure TFrm_DaftarReturPenjualan.BtnPerincianClick(Sender: TObject);
+var
+  i:Integer;
+  f: TFrm_ReturPenjualan;
+  ts: TcxTabSheet;
+begin
+  if QData.IsEmpty then Exit;
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Penjualan6')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if not DM.CekTabOpen('Retur Penjualan') then begin
+    f := TFrm_ReturPenjualan.Create(Self);
+    with f do begin
+      ClearText;
+      dbgbarang.AddRow();
+      {if DM.CekPeriode(QPembelian.FieldValues['tgltransaksi'])=0 then begin
+        dtpfaktur.ReadOnly := True;
+      end;         }
+      with TZQuery.Create(Self)do begin
+        Connection := DM.con;
+        Close;
+        SQL.Text := 'select c.*,ifnull(d.kodepenjualaninvoice,'+QuotedStr('')+')as kodepenjualaninvoice from ' +
+                    '(select a.*,ifnull(b.namakontak,'+QuotedStr('')+')as namakontak from ' +
+                    '(select * from tbl_returpenjualan where noreturpenjualan=:np) as a ' +
+                    'left join tbl_kontak as b on b.nokontak=a.nokontak)as c ' +
+                    'left join tbl_penjualaninvoice as d on d.nopenjualaninvoice=c.nopenjualaninvoice';
+        ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+        Open;
+        LID.Caption := FieldValues['noreturpenjualan'];
+        txtreferensi.Text := FieldValues['kodereturpenjualan'];
+        txtcustomer.Text := FieldValues['namakontak'];
+        LCustomer.Caption := FieldValues['nokontak'];
+        dtpfaktur.Date := FieldValues['tgltransaksi'];
+        txtpenjualan.Text := FieldValues['kodepenjualaninvoice'];
+        LNoPenjualan.Caption := FieldValues['nopenjualaninvoice'];
+        LPiutang.Caption := FieldValues['noakunpiutang'];
+        txtketerangan.Text := FieldValues['keterangan'];
+        Close;
+        SQL.Clear;
+        SQL.Text := 'select a.*,b.kodeakun from ' +
+                    '(select a.*,ifnull(b.kodepajak,'+QuotedStr('-')+')as kodepajak from ' +
+                    '(select a.*,ifnull(b.kodegudang,'+QuotedStr('Gudang Utama')+')as kodegudang from ' +
+                    '(select c.*,d.kodesatuan from ' +
+                    '(select a.*,b.kodebarang,b.namabarang from ' +
+                    '(select * from tbl_returpenjualandetail where noreturpenjualan=:np) as a ' +
+                    'left join tbl_barang as b on b.nobarang=a.nobarang)as c ' +
+                    'left join tbl_satuan as d on d.nosatuan=c.nosatuan)as a ' +
+                    'left join tbl_gudang as b on b.nogudang=a.nogudang)as a ' +
+                    'left join tbl_pajak as b on b.nopajak=a.nopajak)as a ' +
+                    'left join tbl_akun as b on b.noakun=a.noakunreturpenjualan';
+        ParamByName('np').Value := LID.Caption;
+        Open;
+        First;
+        if not IsEmpty then begin
+          dbgbarang.ClearRows;
+          for i:=0 to RecordCount-1 do begin
+            with dbgbarang do begin
+              AddRow();
+              Cell[0,i].AsString := FieldValues['kodeakun'];
+              Cell[1,i].AsString := FieldValues['kodebarang'];
+              Cell[2,i].AsString := FieldValues['namabarang'];
+              Cell[3,i].AsString := FieldValues['qty'];
+              Cell[4,i].AsString := FieldValues['kodesatuan']+'('+FloatToStr(FieldValues['nilai'])+')';
+              Cell[5,i].AsFloat := FieldValues['hargajual'];
+              Cell[6,i].AsFloat := FieldValues['diskon1'];
+              Cell[7,i].AsFloat := FieldValues['diskon2'];
+              Cell[8,i].AsFloat := FieldValues['subtotal'];
+              Cell[9,i].AsString := FieldValues['kodepajak'];
+              Cell[10,i].AsString := FieldValues['kodegudang'];
+              Cell[12,i].AsInteger := FieldValues['nobarang'];
+              Cell[13,i].AsInteger := FieldValues['nosatuan'];
+              Cell[14,i].AsFloat := FieldValues['nilai'];
+              Cell[15,i].AsInteger := FieldValues['noakunpersediaan'];
+              Cell[16,i].AsInteger := FieldValues['noakunreturpenjualan'];
+              Cell[17,i].AsInteger := FieldValues['noakunhpp'];
+              Cell[18,i].AsInteger := FieldValues['nogudang'];
+              Cell[19,i].AsInteger := FieldValues['nopajak'];
+              Cell[20,i].AsInteger := FieldValues['tipepajak'];
+              Cell[21,i].AsFloat := FieldValues['persenpajak'];
+              Cell[22,i].AsFloat := FieldValues['dppbarang'];
+              Cell[23,i].AsFloat := FieldValues['ppnbarang'];
+              Cell[24,i].AsInteger := FieldValues['noakunpajakpenjualan'];
+              Cell[25,i].AsInteger := FieldValues['tipebarang'];
+            end;
+            Next;
+          end;
+        end;
+        UpdateTotal;
+      end;
+    end;
+    f.ManualDock(Frm_Main.PGMain, Frm_Main.PGMain, alClient);
+    f.Show;
+
+    ts := (f.parent as TcxTabSheet);
+
+    Frm_Main.PGMain.ActivePage := ts;
+  end;
+end;
+
+procedure TFrm_DaftarReturPenjualan.BtnUpdateClick(Sender: TObject);
+begin
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarReturPenjualan.dbgdataDBTableView1DblClick(
+  Sender: TObject);
+begin
+  BtnPerincianClick(nil);
+end;
+
+procedure TFrm_DaftarReturPenjualan.RzBitBtn1Click(Sender: TObject);
+begin
+  with TZQuery.Create(Self) do begin
+    Connection := dm.con;
+    Close;
+    SQL.Clear;
+    SQL.Text := 'select * from tbl_terbilang where noreferensi=:np and tipe=:t';
+    ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+    ParamByName('t').Value := 'SR';
+    Open;
+    if IsEmpty then begin
+      Close;
+      SQL.Clear;
+      SQL.Text := 'insert into tbl_terbilang values (:a,:b,:c)';
+      ParamByName('a').Value := QData.FieldValues['noreturpenjualan'];
+      ParamByName('b').Value := 'SR';
+      ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(QData.FieldValues['total']));
+      ExecSQL;
+    end else begin
+      Close;
+      SQL.Clear;
+      SQL.Text := 'update tbl_terbilang set terbilang=:c where noreferensi=:np and tipe=:t';
+      ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+      ParamByName('t').Value := 'SR';
+      ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(QData.FieldValues['total']));
+      ExecSQL;
+    end;
+    Free;
+    dm.Q_NotaReturPenjualan.Close;
+    DM.Q_NotaReturPenjualan.ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+    DM.Q_NotaReturPenjualan.Open;
+    dm.Q_NotaTerbilang.Close;
+    DM.Q_NotaTerbilang.ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+    DM.Q_NotaTerbilang.ParamByName('t').Value := 'SR';
+    DM.Q_NotaTerbilang.Open;
+    DM.Nota_ReturPenjualan.ShowReport(True);
+  end;
+end;
+
+procedure TFrm_DaftarReturPenjualan.RzBitBtn2Click(Sender: TObject);
+var
+  t:TfrxMemoView;
+begin
+  if MessageDlg('Cetak Jurnal Voucher ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+    dm.Q_JurnalVoucher.Close;
+    DM.Q_JurnalVoucher.ParamByName('np').Value := QData.FieldValues['noreturpenjualan'];
+    DM.Q_JurnalVoucher.ParamByName('t').Value := 'SR';
+    DM.Q_JurnalVoucher.Open;
+    t := TfrxMemoView(DM.Rpt_JurnalVoucher.FindObject('Memo1'));
+    t.Memo.Text := 'Jurnal Retur Penjualan';
+    DM.Rpt_JurnalVoucher.ShowReport(True);
+  end;
+end;
+
+end.

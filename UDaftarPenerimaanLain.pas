@@ -1,0 +1,347 @@
+unit UDaftarPenerimaanLain;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ZAbstractRODataset, ZAbstractDataset, ZDataset, Grids,
+  DBGrids, SMDBGrid, RzButton, StdCtrls, Mask, RzEdit, RzLabel, ExtCtrls,
+  RzPanel, cxPC, cxGraphics, cxControls, cxLookAndFeels,
+  cxLookAndFeelPainters, cxStyles, dxSkinsCore, dxSkinBlack, dxSkinBlue,
+  dxSkinCaramel, dxSkinCoffee, dxSkinDarkRoom, dxSkinDarkSide, dxSkinFoggy,
+  dxSkinGlassOceans, dxSkiniMaginary, dxSkinLilian, dxSkinLiquidSky,
+  dxSkinLondonLiquidSky, dxSkinMcSkin, dxSkinMoneyTwins,
+  dxSkinOffice2007Black, dxSkinOffice2007Blue, dxSkinOffice2007Green,
+  dxSkinOffice2007Pink, dxSkinOffice2007Silver, dxSkinOffice2010Black,
+  dxSkinOffice2010Blue, dxSkinOffice2010Silver, dxSkinPumpkin, dxSkinSeven,
+  dxSkinSharp, dxSkinSilver, dxSkinSpringTime, dxSkinStardust,
+  dxSkinSummer2008, dxSkinsDefaultPainters, dxSkinValentine,
+  dxSkinXmas2008Blue, dxSkinscxPCPainter, cxCustomData, cxFilter, cxData,
+  cxDataStorage, cxEdit, cxDBData, cxGridCustomTableView, cxGridTableView,
+  cxGridDBTableView, cxGridLevel, cxClasses, cxGridCustomView, cxGrid,
+  cxTextEdit, frxClass, cxCheckBox;
+
+type
+  TFrm_DaftarPenerimaanLain = class(TForm)
+    RzPanel1: TRzPanel;
+    RzPanel2: TRzPanel;
+    BtnSelesai: TRzBitBtn;
+    BtnHapus: TRzBitBtn;
+    QData: TZQuery;
+    DSData: TDataSource;
+    BtnPerincian: TRzBitBtn;
+    dbgdata: TcxGrid;
+    dbgdataDBTableView1: TcxGridDBTableView;
+    dbgdataLevel1: TcxGridLevel;
+    QDatanopenerimaan: TLargeintField;
+    QDatakodepenerimaan: TStringField;
+    QDatatgltransaksi: TDateField;
+    QDatanamauser: TStringField;
+    QDatanoakun: TLargeintField;
+    QDatatotal: TFloatField;
+    QDatanamaakun: TStringField;
+    dbgdataDBTableView1kodepenerimaan: TcxGridDBColumn;
+    dbgdataDBTableView1tgltransaksi: TcxGridDBColumn;
+    dbgdataDBTableView1total: TcxGridDBColumn;
+    QDatagiro: TSmallintField;
+    BtnUpdate: TRzToolButton;
+    BtnFilter: TRzToolButton;
+    BtnCetak: TRzBitBtn;
+    BtnApprove: TRzBitBtn;
+    procedure BtnSelesaiClick(Sender: TObject);
+    procedure BtnFilterClick(Sender: TObject);
+    procedure BtnHapusClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure BtnPerincianClick(Sender: TObject);
+    procedure dbgdataDBTableView1DblClick(Sender: TObject);
+    procedure BtnUpdateClick(Sender: TObject);
+    procedure BtnCetakClick(Sender: TObject);
+    procedure BtnApproveClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure RefreshQ;
+  end;
+
+var
+  Frm_DaftarPenerimaanLain: TFrm_DaftarPenerimaanLain;
+  datedari,datesampai:string;
+
+implementation
+
+uses UDM, UFTanggal, UMain, RzStatus, UInputPenerimaanLain;
+
+{$R *.dfm}
+
+procedure TFrm_DaftarPenerimaanLain.BtnSelesaiClick(Sender: TObject);
+var
+   ts: TcxTabSheet;
+begin
+   ts := (Self.parent as TcxTabSheet);
+   Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_DaftarPenerimaanLain.RefreshQ;
+begin
+  with QData do begin
+    Close;
+    ParamByName('tkd').Value := datedari;
+    ParamByName('tks').Value := datesampai;
+    Open;
+  end;
+end;
+
+procedure TFrm_DaftarPenerimaanLain.BtnFilterClick(Sender: TObject);
+begin
+  Application.CreateForm(TFTanggal, FTanggal);
+  with FTanggal do begin
+    if ShowModal=mrok then begin
+      datedari := FormatDateTime('yyyy-mm-dd',FTanggal.dtpdari.Date);
+      datesampai := FormatDateTime('yyyy-mm-dd',FTanggal.dtpsampai.Date);
+      RefreshQ;
+    end;
+  end;
+end;
+
+procedure TFrm_DaftarPenerimaanLain.BtnHapusClick(Sender: TObject);
+var
+  md :string;
+begin
+  if QData.IsEmpty then Exit;
+  {if DM.CekPeriode(QData.FieldValues['tgltransaksi'])=0 then begin
+    MessageDlg('Anda tidak diperkenankan mengubah transaksi sebelum periode akuntansi yang sedang aktif',mtError,[mbOK],0);
+    Exit;
+  end;              }
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Kas7')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if MessageDlg('Hapus transaksi ?'#10#13'Perhatian: Perubahan setelah dihapus tidak bisa dibatalkan/dikembalikan!',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+    with TZQuery.Create(Self)do begin
+      Connection := dm.Con;
+      if QData.FieldValues['giro'] = 1 then begin
+        Close;
+        SQL.Clear;
+        SQL.Text := 'select * from tbl_giro where noreferensi=:a and tipe=:b';
+        ParamByName('a').Value := QData.FieldValues['nopenerimaan'];
+        ParamByName('b').Value := 'CI';
+        Open;
+        if FieldValues['posting'] = 1 then begin
+          md := 'Transaksi ini tidak dapat dihapus/diedit karena giro telah cair!';
+          MessageDlg(md,mtWarning,[mbOK],0);
+          Free;
+          exit;
+        end;
+      end;
+      Close;
+      SQL.Clear;
+      SQL.Text := 'delete from tbl_bukubesarakun where noreferensi=:np and tipe=:t';
+      ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+      ParamByName('t').Value := 'CI';
+      ExecSQL;
+      Close;
+      SQL.Clear;
+      SQL.Text := 'delete from tbl_laba where noreferensi=:np and tipe=:t';
+      ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+      ParamByName('t').Value := 'CI';
+      ExecSQL;
+      Close;
+      SQL.Clear;
+      SQL.Text := 'delete from tbl_giro where noreferensi=:np and tipe=:t';
+      ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+      ParamByName('t').Value := 'CI';
+      ExecSQL;
+      Close;
+      SQL.Clear;
+      SQL.Text := 'delete from tbl_penerimaanlain where nopenerimaan=:np';
+      ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+      ExecSQL;
+      Close;
+      SQL.Clear;
+      SQL.Text := 'delete from tbl_penerimaanlaindetail where nopenerimaan=:np';
+      ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+      ExecSQL;
+      Free;
+      RefreshQ;
+    end;
+  end;
+  {if MessageDlg('Transaksi dibatalkan ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+    if QData.FieldValues['iscancel'] = 0 then begin
+      if QData.FieldValues['approve'] = 0 then begin
+        with TZQuery.Create(Self)do begin
+          Connection := dm.Con;
+          Close;
+          SQL.Clear;
+          SQL.Text := 'update tbl_penerimaanlain set iscancel=:ic where nopenerimaan=:np';
+          ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+          ParamByName('ic').Value := 1;
+          ExecSQL;
+          Free;
+          RefreshQ;
+        end;
+      end else begin
+        MessageDlg('Penerimaan pembayaran telah disetujui. Transaksi tidak dapat dibatalkan!',mtError,[mbOK],0);
+      end;
+    end;
+  end; }
+end;
+
+procedure TFrm_DaftarPenerimaanLain.FormShow(Sender: TObject);
+begin
+  datedari := FormatDateTime('yyyy-mm-dd',DM.FDOM(Date));
+  datesampai := FormatDateTime('yyyy-mm-dd',DM.LastDayCurrMon(Date));
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarPenerimaanLain.BtnPerincianClick(Sender: TObject);
+var
+  i:Integer;
+  f: TFrm_InputPenerimaanLain;
+  ts: TcxTabSheet;
+begin
+  if QData.IsEmpty then Exit;
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Kas2')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if not DM.CekTabOpen('Penerimaan Kas') then begin
+    f := TFrm_InputPenerimaanLain.Create(Self);
+    with f do begin
+      ClearText;
+      {if DM.CekPeriode(QData.FieldValues['tgltransaksi'])=0 then begin
+        dtptanggal.ReadOnly := True;
+      end; }
+      LID.Caption := QData.FieldValues['nopenerimaan'];
+      with TZQuery.Create(Self)do begin
+        Connection := DM.con;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'SELECT a.*,b.namaakun FROM ' +
+                    '(SELECT * FROM tbl_penerimaanlain where nopenerimaan=:np)AS a ' +
+                    'LEFT JOIN tbl_akun AS b ON b.noakun=a.noakun';
+        ParamByName('np').Value := LID.Caption;
+        Open;
+        txtreferensi.Text := FieldValues['kodepenerimaan'];
+        txtkas.Text := FieldValues['namaakun'];
+        LKas.Caption := FieldValues['noakun'];
+        dtptanggal.Date := FieldValues['tgltransaksi'];
+        if FieldValues['giro'] = 1 then
+          cbgiro.Checked := True
+        else cbgiro.Checked := False;
+
+        if cbgiro.Checked = True then begin
+          Close;
+          SQL.Clear;
+          SQL.Text := 'select * from tbl_giro where noreferensi=:a and tipe=:b';
+          ParamByName('a').Value := LID.Caption;
+          ParamByName('b').Value := 'CI';
+          Open;
+          if FieldValues['posting'] = 1 then begin
+            cbgiro.Enabled := False;
+          end;
+        end;
+        Close;
+        SQL.Clear;
+        SQL.Text := 'select a.*,b.kodeakun,b.namaakun from ' +
+                    '(select * from tbl_penerimaanlaindetail where nopenerimaan=:nk)as a ' +
+                    'left join tbl_akun as b on b.noakun=a.noakun';
+        ParamByName('nk').Value := LID.Caption;
+        Open;
+        if not IsEmpty then begin
+          DBGData.ClearRows;
+          First;
+          for i:=0 to RecordCount-1 do begin
+            DBGData.AddRow();
+            DBGData.Cell[0,i].AsString := FieldValues['kodeakun'];
+            DBGData.Cell[1,i].AsString := FieldValues['namaakun'];
+            DBGData.Cell[2,i].AsFloat := FieldValues['jumlah'];
+            DBGData.Cell[3,i].AsString := FieldValues['memo'];
+            DBGData.Cell[5,i].AsInteger := FieldValues['noakun'];
+            Next;
+          end;
+        end;
+        UpdateTotal;
+        Free;
+      end;
+    end;
+    f.ManualDock(Frm_Main.PGMain, Frm_Main.PGMain, alClient);
+    f.Show;
+
+    ts := (f.parent as TcxTabSheet);
+
+    Frm_Main.PGMain.ActivePage := ts;
+
+  end;
+
+end;
+
+procedure TFrm_DaftarPenerimaanLain.dbgdataDBTableView1DblClick(
+  Sender: TObject);
+begin
+  BtnPerincianClick(nil);
+end;
+
+procedure TFrm_DaftarPenerimaanLain.BtnUpdateClick(Sender: TObject);
+begin
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarPenerimaanLain.BtnCetakClick(Sender: TObject);
+var
+  t:TfrxMemoView;
+begin
+  if QData.IsEmpty then Exit;
+  with TZQuery.Create(Self)do begin
+    Connection := dm.con;
+    Close;
+    SQL.Clear;
+    SQL.Text := 'select * from tbl_terbilang where noreferensi=:np and tipe=:t';
+    ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+    ParamByName('t').Value := 'CI';
+    Open;
+    if IsEmpty then begin
+      Close;
+      SQL.Clear;
+      SQL.Text := 'insert into tbl_terbilang values (:a,:b,:c)';
+      ParamByName('a').Value := QData.FieldValues['nopenerimaan'];
+      ParamByName('b').Value := 'CI';
+      ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(QData.FieldValues['total']));
+      ExecSQL;
+    end else begin
+      Close;
+      SQL.Clear;
+      SQL.Text := 'update tbl_terbilang set terbilang=:c where noreferensi=:np and tipe=:t';
+      ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+      ParamByName('t').Value := 'CI';
+      ParamByName('c').Value := DM.ConvKeHuruf(IntToStr(QData.FieldValues['total']));
+      ExecSQL;
+    end;
+    dm.Q_NotaPenerimaanKas.Close;
+    DM.Q_NotaPenerimaanKas.ParamByName('np').Value := QData.FieldValues['nopenerimaan'];;
+    DM.Q_NotaPenerimaanKas.Open;
+    dm.Q_NotaTerbilang.Close;
+    DM.Q_NotaTerbilang.ParamByName('np').Value := QData.FieldValues['nopenerimaan'];;
+    DM.Q_NotaTerbilang.ParamByName('t').Value := 'CI';
+    DM.Q_NotaTerbilang.Open;
+    DM.Nota_PenerimaanKas.ShowReport(True);
+    Free;
+  end;
+end;
+
+procedure TFrm_DaftarPenerimaanLain.BtnApproveClick(Sender: TObject);
+var
+  t:TfrxMemoView;
+begin
+  if MessageDlg('Cetak Jurnal Voucher ?',mtConfirmation,[mbYes,mbNo],0)=mryes then begin
+    dm.Q_JurnalVoucher.Close;
+    DM.Q_JurnalVoucher.ParamByName('np').Value := QData.FieldValues['nopenerimaan'];
+    DM.Q_JurnalVoucher.ParamByName('t').Value := 'CI';
+    DM.Q_JurnalVoucher.Open;
+    t := TfrxMemoView(DM.Rpt_JurnalVoucher.FindObject('Memo1'));
+    t.Memo.Text := 'Jurnal Voucher';
+    DM.Rpt_JurnalVoucher.ShowReport(True);
+  end;
+end;
+
+end.

@@ -1,0 +1,81 @@
+unit USettingBackup;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, RzButton, StdCtrls, RzLabel, ExtCtrls, RzPanel, RzShellDialogs,
+  Mask, RzEdit, RzBtnEdt, IniFiles, RzBorder;
+
+type
+  TFrm_SettingBackup = class(TForm)
+    RzLabel1: TRzLabel;
+    RzLabel2: TRzLabel;
+    RzPanel1: TRzPanel;
+    RzPanel2: TRzPanel;
+    BtnKeluar: TRzBitBtn;
+    BtnSimpan: TRzBitBtn;
+    BtnBackup: TRzBitBtn;
+    txtlokasi: TRzButtonEdit;
+    txtnama: TRzEdit;
+    SaveDialog1: TSaveDialog;
+    procedure BtnKeluarClick(Sender: TObject);
+    procedure txtlokasiButtonClick(Sender: TObject);
+    procedure BtnBackupClick(Sender: TObject);
+    procedure BtnSimpanClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Frm_SettingBackup: TFrm_SettingBackup;
+
+implementation
+
+uses UDM, StrUtils;
+
+{$R *.dfm}
+
+procedure TFrm_SettingBackup.BtnKeluarClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFrm_SettingBackup.txtlokasiButtonClick(Sender: TObject);
+begin
+  SaveDialog1.InitialDir := txtlokasi.Text;
+  if SaveDialog1.Execute then begin
+    txtlokasi.Text := ExtractFilePath(SaveDialog1.FileName);
+    txtnama.Text := ExtractFileName(SaveDialog1.FileName);
+    txtnama.SetFocus;
+  end;
+end;
+
+procedure TFrm_SettingBackup.BtnBackupClick(Sender: TObject);
+begin
+  if txtlokasi.Text = '' then begin
+    MessageDlg('Lokasi backup belum dipilih',mtError,[mbOK],0);
+    txtlokasi.SetFocus;
+    Exit;
+  end;
+  ModalResult := mrOk;
+end;
+
+procedure TFrm_SettingBackup.BtnSimpanClick(Sender: TObject);
+begin
+  if BtnSimpan.Caption = 'Keluar Tanpa Backup' then begin
+    Application.Terminate
+  end else if BtnSimpan.Caption = 'Batal' then begin
+    ModalResult := mrCancel;
+  end;
+end;
+
+procedure TFrm_SettingBackup.FormShow(Sender: TObject);
+begin
+  txtnama.Text := 'backup_' + FormatDateTime('dd-mm-yyyy', Date);
+end;
+
+end.

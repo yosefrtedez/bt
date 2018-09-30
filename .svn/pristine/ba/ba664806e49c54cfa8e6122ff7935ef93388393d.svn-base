@@ -1,0 +1,116 @@
+unit UPembayaranLoan;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, RzEdit, DB, ZAbstractRODataset, ZAbstractDataset, ZDataset,
+  RzBtnEdt, NxEdit, StdCtrls, Mask, RzLabel, RzButton, ExtCtrls, RzPanel;
+
+type
+  TFrm_PembayaranCA = class(TForm)
+    RzPanel1: TRzPanel;
+    BtnSimpan: TRzBitBtn;
+    BtnBatal: TRzBitBtn;
+    RzPanel3: TRzPanel;
+    RzLabel2: TRzLabel;
+    RzLabel3: TRzLabel;
+    RzLabel1: TRzLabel;
+    LKas: TRzLabel;
+    txtnomorgiro: TRzEdit;
+    dtptanggal: TNxDatePicker;
+    txtakun: TRzButtonEdit;
+    RzPanel2: TRzPanel;
+    ZQuery1: TZQuery;
+    LID: TRzLabel;
+    RzLabel4: TRzLabel;
+    RzLabel5: TRzLabel;
+    txtkeperluan: TRzEdit;
+    txtsaldo: TRzNumericEdit;
+    RzLabel7: TRzLabel;
+    txtbayar: TRzNumericEdit;
+    LLoan: TRzLabel;
+    LAkunCA: TRzLabel;
+    RzLabel6: TRzLabel;
+    txtkontak: TRzEdit;
+    LKontak: TRzLabel;
+    procedure BtnBatalClick(Sender: TObject);
+    procedure BtnSimpanClick(Sender: TObject);
+    procedure txtakunButtonClick(Sender: TObject);
+    procedure txtakunKeyPress(Sender: TObject; var Key: Char);
+    procedure txtbayarExit(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure ClearText;
+  end;
+
+var
+  Frm_PembayaranCA: TFrm_PembayaranCA;
+
+implementation
+
+uses UDM, UDataAkun;
+
+{$R *.dfm}
+
+{ TFrm_PembayaranCA }
+
+procedure TFrm_PembayaranCA.ClearText;
+begin
+  LID.Caption := '0';
+  LLoan.Caption := '0';
+  LAkunCA.Caption := '0';
+  LKontak.Caption := '0';
+  txtkontak.Clear;
+  txtnomorgiro.Clear;
+  txtsaldo.Value := 0;
+  txtkeperluan.Clear;
+  dtptanggal.Date := Date;
+  txtakun.Clear;
+  LKas.Caption := '0';
+  txtbayar.Value := 0;
+end;
+
+procedure TFrm_PembayaranCA.BtnBatalClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFrm_PembayaranCA.BtnSimpanClick(Sender: TObject);
+begin
+  if LKas.Caption = '0' then begin
+    txtakun.SetFocus;
+    Exit;
+  end;
+  if txtbayar.Value = 0 then begin
+    txtbayar.SetFocus;
+    Exit;
+  end;
+  ModalResult := mrOk;
+end;
+
+procedure TFrm_PembayaranCA.txtakunButtonClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+  akunkas := 1;
+  Frm_DataAkun.RefreshQ;
+  if Frm_DataAkun.ShowModal = mrok then begin
+    LKas.Caption := Frm_DataAkun.QData.FieldValues['noakun'];
+    txtakun.Text := Frm_DataAkun.QData.FieldValues['namaakun']; 
+  end;
+end;
+
+procedure TFrm_PembayaranCA.txtakunKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtakunButtonClick(nil);
+end;
+
+procedure TFrm_PembayaranCA.txtbayarExit(Sender: TObject);
+begin
+  if txtsaldo.Value < txtbayar.Value then txtbayar.Value := txtsaldo.Value
+end;
+
+end.

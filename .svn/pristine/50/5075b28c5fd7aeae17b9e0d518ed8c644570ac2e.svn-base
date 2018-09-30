@@ -1,0 +1,94 @@
+unit UTransaksiGiroKeluar;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, RzPanel, DB, ZAbstractRODataset, ZAbstractDataset,
+  ZDataset, RzEdit, RzBtnEdt, NxEdit, StdCtrls, Mask, RzLabel, RzButton;
+
+type
+  TFrm_TransaksiGiroKeluar = class(TForm)
+    RzPanel1: TRzPanel;
+    RzPanel2: TRzPanel;
+    BtnSimpan: TRzBitBtn;
+    BtnBatal: TRzBitBtn;
+    RzPanel3: TRzPanel;
+    RzLabel2: TRzLabel;
+    RzLabel3: TRzLabel;
+    RzLabel1: TRzLabel;
+    LAkunGiro: TRzLabel;
+    txtnomorgiro: TRzEdit;
+    dtptanggal: TNxDatePicker;
+    txtakun: TRzButtonEdit;
+    ZQuery1: TZQuery;
+    procedure BtnBatalClick(Sender: TObject);
+    procedure BtnSimpanClick(Sender: TObject);
+    procedure txtakunButtonClick(Sender: TObject);
+    procedure txtakunKeyPress(Sender: TObject; var Key: Char);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure ClearText;
+  end;
+
+var
+  Frm_TransaksiGiroKeluar: TFrm_TransaksiGiroKeluar;
+
+implementation
+
+uses UDataAkun, UDM;
+
+{$R *.dfm}
+
+procedure TFrm_TransaksiGiroKeluar.BtnBatalClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFrm_TransaksiGiroKeluar.ClearText;
+begin
+  txtnomorgiro.Clear;
+  dtptanggal.Date := Date;
+  txtakun.Clear;
+  LAkunGiro.Caption := '0';
+  RzLabel1.Visible := True;
+  txtakun.Visible := True;
+end;
+
+procedure TFrm_TransaksiGiroKeluar.BtnSimpanClick(Sender: TObject);
+begin
+  if txtnomorgiro.Text = '' then begin
+    MessageDlg('Nomor Giro: harus diisi!',mtError,[mbOK],0);
+    txtnomorgiro.SetFocus;
+    Exit;
+  end;
+  if LAkunGiro.Caption = '0' then begin
+    if txtakun.Visible = True then begin
+      MessageDlg('Akun Giro: harus diisi!',mtError,[mbOK],0);
+      txtakun.SetFocus;
+      Exit;
+    end;
+  end;
+  ModalResult := mrOk;
+end;
+
+procedure TFrm_TransaksiGiroKeluar.txtakunButtonClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_DataAkun, Frm_DataAkun);
+  akunkas := -1;
+  Frm_DataAkun.RefreshQ;
+  if Frm_DataAkun.ShowModal = mrok then begin
+    txtakun.Text := Frm_DataAkun.QData.FieldValues['kodeakun']+'|'+Frm_DataAkun.QData.FieldValues['namaakun'];
+    LAkunGiro.Caption := Frm_DataAkun.QData.FieldValues['noakun'];
+  end;
+end;
+
+procedure TFrm_TransaksiGiroKeluar.txtakunKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  txtakunButtonClick(nil);
+end;
+
+end.

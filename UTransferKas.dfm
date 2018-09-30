@@ -1,0 +1,297 @@
+object Frm_TransferKas: TFrm_TransferKas
+  Left = 311
+  Top = 217
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'Transfer Kas'
+  ClientHeight = 217
+  ClientWidth = 438
+  Color = clBtnFace
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel1: TRzPanel
+    Left = 0
+    Top = 176
+    Width = 438
+    Height = 41
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 2
+    object BtnSimpan: TRzBitBtn
+      Left = 269
+      Top = 8
+      Caption = 'Simpan'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnSimpanClick
+    end
+    object BtnBatal: TRzBitBtn
+      Left = 352
+      Top = 8
+      Caption = 'Keluar'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnBatalClick
+    end
+  end
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 438
+    Height = 41
+    Align = alTop
+    BorderOuter = fsNone
+    TabOrder = 0
+    object RzLabel1: TRzLabel
+      Left = 16
+      Top = 11
+      Width = 30
+      Height = 15
+      Caption = 'Dari :'
+    end
+    object LKasDari: TRzLabel
+      Left = 96
+      Top = 11
+      Width = 49
+      Height = 15
+      Caption = 'LKasDari'
+      Visible = False
+    end
+    object LDari: TRzLabel
+      Left = 240
+      Top = 11
+      Width = 29
+      Height = 15
+      Caption = 'LDari'
+      Visible = False
+    end
+    object LKasTransit: TRzLabel
+      Left = 280
+      Top = 11
+      Width = 63
+      Height = 15
+      Caption = 'LKasTransit'
+      Visible = False
+    end
+    object txtdari: TRzButtonEdit
+      Left = 96
+      Top = 8
+      Width = 137
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOnEnter = True
+      TabOrder = 0
+      OnKeyPress = txtdariKeyPress
+      AllowKeyEdit = False
+      OnButtonClick = txtdariButtonClick
+    end
+  end
+  object RzPanel3: TRzPanel
+    Left = 0
+    Top = 41
+    Width = 438
+    Height = 135
+    Align = alClient
+    BorderOuter = fsPopup
+    Color = 7915456
+    TabOrder = 1
+    DesignSize = (
+      438
+      135)
+    object RzLabel2: TRzLabel
+      Left = 16
+      Top = 11
+      Width = 19
+      Height = 15
+      Caption = 'Ke :'
+    end
+    object RzLabel3: TRzLabel
+      Left = 16
+      Top = 39
+      Width = 48
+      Height = 15
+      Caption = 'Tanggal :'
+    end
+    object RzLabel5: TRzLabel
+      Left = 16
+      Top = 95
+      Width = 68
+      Height = 15
+      Caption = 'Keterangan :'
+    end
+    object RzLabel6: TRzLabel
+      Left = 16
+      Top = 67
+      Width = 45
+      Height = 15
+      Caption = 'Jumlah :'
+    end
+    object LKasKe: TRzLabel
+      Left = 112
+      Top = 11
+      Width = 38
+      Height = 15
+      Caption = 'LKasKe'
+      Visible = False
+    end
+    object LKe: TRzLabel
+      Left = 240
+      Top = 11
+      Width = 18
+      Height = 15
+      Caption = 'LKe'
+      Visible = False
+    end
+    object LID: TRzLabel
+      Left = 248
+      Top = 19
+      Width = 17
+      Height = 15
+      Caption = 'LID'
+      Visible = False
+    end
+    object LKasKeTransit: TRzLabel
+      Left = 280
+      Top = 11
+      Width = 76
+      Height = 15
+      Caption = 'LKasKeTransit'
+      Visible = False
+    end
+    object txtjumlah: TRzNumericEdit
+      Left = 96
+      Top = 64
+      Width = 137
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOnEnter = True
+      TabOrder = 2
+      IntegersOnly = False
+      DisplayFormat = '#,#0.##'
+    end
+    object txtke: TRzButtonEdit
+      Left = 96
+      Top = 8
+      Width = 137
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOnEnter = True
+      TabOrder = 0
+      OnKeyPress = txtkeKeyPress
+      AllowKeyEdit = False
+      OnButtonClick = txtkeButtonClick
+    end
+    object txtketerangan: TRzEdit
+      Left = 96
+      Top = 92
+      Width = 329
+      Height = 23
+      Color = clWhite
+      FrameHotTrack = True
+      FrameVisible = True
+      ReadOnlyColor = clYellow
+      TabOnEnter = True
+      TabOrder = 3
+    end
+    object dtptanggal: TNxDatePicker
+      Left = 96
+      Top = 36
+      Width = 137
+      Height = 23
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      Text = '16/04/2017'
+      HideFocus = False
+      Date = 42841.000000000000000000
+      NoneCaption = 'None'
+      TodayCaption = 'Today'
+    end
+    object cbapprove: TRzCheckBox
+      Left = 333
+      Top = 8
+      Width = 97
+      Height = 17
+      Anchors = [akTop, akRight]
+      Caption = 'Approve'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      HotTrack = True
+      ParentFont = False
+      State = cbUnchecked
+      TabOrder = 4
+      Visible = False
+    end
+    object cbcair: TRzCheckBox
+      Left = 333
+      Top = 24
+      Width = 97
+      Height = 17
+      Anchors = [akTop, akRight]
+      Caption = 'Cair'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      HotTrack = True
+      ParentFont = False
+      State = cbUnchecked
+      TabOrder = 5
+      Visible = False
+    end
+    object cbcancel: TRzCheckBox
+      Left = 333
+      Top = 40
+      Width = 97
+      Height = 17
+      Anchors = [akTop, akRight]
+      Caption = 'cancel'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      HotTrack = True
+      ParentFont = False
+      State = cbUnchecked
+      TabOrder = 6
+      Visible = False
+    end
+  end
+  object ZQuery1: TZQuery
+    Params = <>
+    Left = 16
+    Top = 177
+  end
+end

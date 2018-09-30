@@ -1,0 +1,259 @@
+object Frm_TermOfPayment: TFrm_TermOfPayment
+  Left = 568
+  Top = 261
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'Term Pembayaran'
+  ClientHeight = 216
+  ClientWidth = 292
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel1: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 292
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Term Pembayaran'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    GradientColorStyle = gcsMSOffice
+    ParentFont = False
+    TabOrder = 0
+  end
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 179
+    Width = 292
+    Height = 37
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 1
+    DesignSize = (
+      292
+      37)
+    object BtSave: TRzBitBtn
+      Left = 204
+      Top = 6
+      Anchors = [akTop, akRight]
+      Caption = 'Ok'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtSaveClick
+    end
+    object BtnExit: TRzBitBtn
+      Left = 124
+      Top = 6
+      Anchors = [akTop, akRight]
+      Caption = 'Cancel'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnExitClick
+    end
+  end
+  object RzPanel3: TRzPanel
+    Left = 0
+    Top = 25
+    Width = 292
+    Height = 154
+    Align = alClient
+    BorderOuter = fsNone
+    TabOrder = 2
+    object RzLabel2: TRzLabel
+      Left = 16
+      Top = 23
+      Width = 76
+      Height = 15
+      Caption = 'Hari Discount'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel4: TRzLabel
+      Left = 144
+      Top = 23
+      Width = 3
+      Height = 15
+      Caption = ':'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel1: TRzLabel
+      Left = 16
+      Top = 50
+      Width = 94
+      Height = 15
+      Caption = 'Hari Jatuh Tempo'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel3: TRzLabel
+      Left = 144
+      Top = 50
+      Width = 3
+      Height = 15
+      Caption = ':'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel5: TRzLabel
+      Left = 16
+      Top = 77
+      Width = 79
+      Height = 15
+      Caption = 'Discount Awal'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel6: TRzLabel
+      Left = 144
+      Top = 77
+      Width = 3
+      Height = 15
+      Caption = ':'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel9: TRzLabel
+      Left = 16
+      Top = 104
+      Width = 119
+      Height = 15
+      Caption = 'Denda Keterlambatan'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel10: TRzLabel
+      Left = 144
+      Top = 104
+      Width = 3
+      Height = 15
+      Caption = ':'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel7: TRzLabel
+      Left = 240
+      Top = 77
+      Width = 9
+      Height = 15
+      Caption = '%'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object RzLabel8: TRzLabel
+      Left = 240
+      Top = 104
+      Width = 9
+      Height = 15
+      Caption = '%'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+    end
+    object txtdiskonday: TRzNumericEdit
+      Left = 152
+      Top = 20
+      Width = 80
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOrder = 0
+      DisplayFormat = ',0;(,0)'
+    end
+    object txtduedate: TRzNumericEdit
+      Left = 152
+      Top = 47
+      Width = 80
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOrder = 1
+      DisplayFormat = ',0;(,0)'
+    end
+    object txtearlydiskon: TRzNumericEdit
+      Left = 152
+      Top = 74
+      Width = 80
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOrder = 2
+      DisplayFormat = ',0;(,0)'
+    end
+    object txtlatecharge: TRzNumericEdit
+      Left = 152
+      Top = 101
+      Width = 80
+      Height = 23
+      FrameHotTrack = True
+      FrameVisible = True
+      TabOrder = 3
+      DisplayFormat = ',0;(,0)'
+    end
+  end
+end

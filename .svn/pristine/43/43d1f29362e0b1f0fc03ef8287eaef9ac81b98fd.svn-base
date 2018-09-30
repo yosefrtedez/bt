@@ -1,0 +1,284 @@
+object Frm_DaftarAkun: TFrm_DaftarAkun
+  Left = 192
+  Top = 124
+  Align = alClient
+  BorderStyle = bsNone
+  Caption = 'Data Akun'
+  ClientHeight = 525
+  ClientWidth = 1082
+  Color = clBtnFace
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  OldCreateOrder = False
+  WindowState = wsMaximized
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel1: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 1082
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Data Akun'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 0
+    object BtnUpdate: TRzToolButton
+      Left = 1004
+      Top = 0
+      Width = 78
+      ImageIndex = 1
+      Images = DM.IL16
+      ShowCaption = True
+      UseToolbarShowCaption = False
+      Align = alRight
+      Caption = 'Update'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      OnClick = BtnUpdateClick
+    end
+  end
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 484
+    Width = 1082
+    Height = 41
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 1
+    DesignSize = (
+      1082
+      41)
+    object BtnSelesai: TRzBitBtn
+      Left = 994
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Selesai'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 4
+      OnClick = BtnSelesaiClick
+    end
+    object BtnBaru: TRzBitBtn
+      Left = 10
+      Top = 8
+      Caption = 'Baru'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnBaruClick
+    end
+    object BtnEdit: TRzBitBtn
+      Left = 90
+      Top = 8
+      Caption = 'Edit'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnEditClick
+    end
+    object BtnHapus: TRzBitBtn
+      Left = 170
+      Top = 8
+      Caption = 'Hapus'
+      Color = clMaroon
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
+      OnClick = BtnHapusClick
+    end
+    object BtnBukuBesar: TRzBitBtn
+      Left = 914
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Buku Besar'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+      OnClick = BtnBukuBesarClick
+    end
+  end
+  object dbgdata: TcxGrid
+    Left = 0
+    Top = 25
+    Width = 1082
+    Height = 459
+    Align = alClient
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 2
+    LookAndFeel.Kind = lfOffice11
+    LookAndFeel.NativeStyle = False
+    LookAndFeel.SkinName = 'Blue'
+    object dbgdataDBTableView1: TcxGridDBTableView
+      OnDblClick = dbgdataDBTableView1DblClick
+      NavigatorButtons.ConfirmDelete = False
+      DataController.DataSource = DSData
+      DataController.Filter.Options = [fcoCaseInsensitive]
+      DataController.Filter.Active = True
+      DataController.Options = [dcoAssignGroupingValues, dcoAssignMasterDetailKeys, dcoSaveExpanding, dcoGroupsAlwaysExpanded]
+      DataController.Summary.DefaultGroupSummaryItems = <
+        item
+          Kind = skSum
+          Position = spFooter
+          Column = dbgdataDBTableView1nilai
+        end
+        item
+          Format = '#,#0.##'
+          Kind = skSum
+          Column = dbgdataDBTableView1nilai
+        end>
+      DataController.Summary.FooterSummaryItems = <>
+      DataController.Summary.SummaryGroups = <>
+      FilterRow.Visible = True
+      FilterRow.ApplyChanges = fracImmediately
+      OptionsCustomize.GroupBySorting = True
+      OptionsData.CancelOnExit = False
+      OptionsData.Deleting = False
+      OptionsData.DeletingConfirmation = False
+      OptionsData.Editing = False
+      OptionsData.Inserting = False
+      OptionsSelection.CellSelect = False
+      OptionsView.ColumnAutoWidth = True
+      OptionsView.ExpandButtonsForEmptyDetails = False
+      OptionsView.GridLines = glHorizontal
+      object dbgdataDBTableView1kodeakun: TcxGridDBColumn
+        Caption = 'Kode'
+        DataBinding.FieldName = 'kodeakun'
+        HeaderAlignmentHorz = taCenter
+        Width = 165
+      end
+      object dbgdataDBTableView1namaakun: TcxGridDBColumn
+        Caption = 'Nama'
+        DataBinding.FieldName = 'namaakun'
+        HeaderAlignmentHorz = taCenter
+        Width = 298
+      end
+      object dbgdataDBTableView1namasubklasifikasi: TcxGridDBColumn
+        DataBinding.FieldName = 'namasubklasifikasi'
+        Visible = False
+        GroupIndex = 0
+        GroupSummaryAlignment = taRightJustify
+        HeaderAlignmentHorz = taCenter
+        Options.ShowCaption = False
+        Options.Sorting = False
+        Width = 298
+        IsCaptionAssigned = True
+      end
+      object dbgdataDBTableView1nilai: TcxGridDBColumn
+        Caption = 'Nilai'
+        DataBinding.FieldName = 'nilai'
+        HeaderAlignmentHorz = taCenter
+      end
+    end
+    object dbgdataLevel1: TcxGridLevel
+      GridView = dbgdataDBTableView1
+    end
+  end
+  object QData: TZQuery
+    Connection = DM.con
+    SQL.Strings = (
+      'SELECT c.*,IFNULL(ABS(SUM(debit)-SUM(kredit)),0)AS nilai FROM'
+      
+        '(SELECT a.*,CONCAT(b.noklasifikasi,'#39'.'#39',b.nosubklasifikasi,'#39' '#39',b.' +
+        'namasubklasifikasi)AS namasubklasifikasi FROM'
+      '(SELECT * FROM tbl_akun WHERE aktif=1)AS a'
+      
+        'LEFT JOIN tbl_subklasifikasi AS b ON b.nosubklasifikasi=a.nosubk' +
+        'lasifikasi AND b.noklasifikasi=a.noklasifikasi)AS c'
+      
+        'LEFT JOIN tbl_bukubesarakun AS d ON d.noakun=c.noakun GROUP BY c' +
+        '.noakun ORDER BY c.noklasifikasi,nosubklasifikasi,c.kodeakun')
+    Params = <>
+    Left = 816
+    Top = 88
+    object QDatanoakun: TLargeintField
+      FieldName = 'noakun'
+      ReadOnly = True
+    end
+    object QDatanoklasifikasi: TLargeintField
+      FieldName = 'noklasifikasi'
+      Required = True
+    end
+    object QDatanosubklasifikasi: TLargeintField
+      FieldName = 'nosubklasifikasi'
+      ReadOnly = True
+    end
+    object QDatanamaakun: TStringField
+      FieldName = 'namaakun'
+      ReadOnly = True
+      Size = 50
+    end
+    object QDatakas: TSmallintField
+      FieldName = 'kas'
+      ReadOnly = True
+    end
+    object QDataaktif: TSmallintField
+      FieldName = 'aktif'
+      ReadOnly = True
+    end
+    object QDatanamasubklasifikasi: TStringField
+      FieldName = 'namasubklasifikasi'
+      ReadOnly = True
+      Size = 50
+    end
+    object QDatakodeakun: TStringField
+      FieldName = 'kodeakun'
+      ReadOnly = True
+      Size = 10
+    end
+    object QDatanilai: TFloatField
+      FieldName = 'nilai'
+      ReadOnly = True
+      DisplayFormat = '#,#0.##'
+    end
+  end
+  object DSData: TDataSource
+    DataSet = QData
+    Left = 844
+    Top = 88
+  end
+end

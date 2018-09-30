@@ -1,0 +1,63 @@
+unit UFTanggal;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, RzDTP, RzButton, StdCtrls, RzLabel, ExtCtrls, RzPanel,
+  NxEdit;
+
+type
+  TFrm_Filter = class(TForm)
+    RzPanel1: TRzPanel;
+    RzLabel1: TRzLabel;
+    RzPanel2: TRzPanel;
+    BtnOk: TRzBitBtn;
+    BtnBatal: TRzBitBtn;
+    RzLabel2: TRzLabel;
+    BtnSama: TRzButton;
+    RzLabel3: TRzLabel;
+    RzLabel4: TRzLabel;
+    dtpdari: TNxDatePicker;
+    dtpsampai: TNxDatePicker;
+    procedure BtnSamaClick(Sender: TObject);
+    procedure BtnBatalClick(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Frm_Filter: TFrm_Filter;
+
+implementation
+
+uses UDM;
+
+{$R *.dfm}
+
+procedure TFrm_Filter.BtnSamaClick(Sender: TObject);
+begin
+  dtpsampai.Date := dtpdari.Date;
+end;
+
+procedure TFrm_Filter.BtnBatalClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFrm_Filter.BtnOkClick(Sender: TObject);
+begin
+  ModalResult := mrOk;
+end;
+
+procedure TFrm_Filter.FormShow(Sender: TObject);
+begin
+  dtpdari.Date := DM.FDOM(Date);
+  dtpsampai.Date := DM.LastDayCurrMon(Date);
+end;
+
+end.

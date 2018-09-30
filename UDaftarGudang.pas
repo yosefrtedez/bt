@@ -1,0 +1,241 @@
+unit UDaftarGudang;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, cxGraphics, cxControls, cxLookAndFeels, cxLookAndFeelPainters,
+  cxStyles, dxSkinsCore, dxSkinBlack, dxSkinBlue, dxSkinCaramel,
+  dxSkinCoffee, dxSkinDarkRoom, dxSkinDarkSide, dxSkinFoggy,
+  dxSkinGlassOceans, dxSkiniMaginary, dxSkinLilian, dxSkinLiquidSky,
+  dxSkinLondonLiquidSky, dxSkinMcSkin, dxSkinMoneyTwins,
+  dxSkinOffice2007Black, dxSkinOffice2007Blue, dxSkinOffice2007Green,
+  dxSkinOffice2007Pink, dxSkinOffice2007Silver, dxSkinOffice2010Black,
+  dxSkinOffice2010Blue, dxSkinOffice2010Silver, dxSkinPumpkin, dxSkinSeven,
+  dxSkinSharp, dxSkinSilver, dxSkinSpringTime, dxSkinStardust,
+  dxSkinSummer2008, dxSkinsDefaultPainters, dxSkinValentine,
+  dxSkinXmas2008Blue, dxSkinscxPCPainter, cxCustomData, cxFilter, cxData,
+  cxDataStorage, cxEdit, DB, cxDBData, cxTextEdit, cxGridCustomTableView,
+  cxGridTableView, cxGridDBTableView, ZAbstractRODataset, ZAbstractDataset,
+  ZDataset, cxGridLevel, cxClasses, cxGridCustomView, cxGrid, RzButton,
+  ExtCtrls, RzPanel, cxPC;
+
+type
+  TFrm_DaftarGudang = class(TForm)
+    RzPanel1: TRzPanel;
+    BtnUpdate: TRzToolButton;
+    RzPanel2: TRzPanel;
+    BtnSelesai: TRzBitBtn;
+    BtnBaru: TRzBitBtn;
+    BtnEdit: TRzBitBtn;
+    BtnHapus: TRzBitBtn;
+    dbgdata: TcxGrid;
+    dbgdataDBTableView1: TcxGridDBTableView;
+    dbgdataLevel1: TcxGridLevel;
+    QData: TZQuery;
+    DSData: TDataSource;
+    dbgdataDBTableView1namagudang: TcxGridDBColumn;
+    dbgdataDBTableView1pos: TcxGridDBColumn;
+    dbgdataDBTableView1kodegudang: TcxGridDBColumn;
+    BtnFilter: TRzToolButton;
+    procedure BtnSelesaiClick(Sender: TObject);
+    procedure BtnUpdateClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure BtnFilterClick(Sender: TObject);
+    procedure BtnBaruClick(Sender: TObject);
+    procedure BtnEditClick(Sender: TObject);
+    procedure BtnHapusClick(Sender: TObject);
+    procedure dbgdataDBTableView1DblClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure RefreshQ;
+  end;
+
+var
+  Frm_DaftarGudang: TFrm_DaftarGudang;
+  statusgudang: Integer;
+
+implementation
+
+uses UDM, UInputGudang, UFGudang, UMain;
+
+{$R *.dfm}
+
+procedure TFrm_DaftarGudang.BtnSelesaiClick(Sender: TObject);
+var
+  ts: TcxTabSheet;
+begin
+  ts := (Self.parent as TcxTabSheet);
+  Frm_Main.CloseTab(Self, ts);
+end;
+
+procedure TFrm_DaftarGudang.BtnUpdateClick(Sender: TObject);
+begin
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarGudang.RefreshQ;
+begin
+  with QData do begin
+    Close;
+    if statusgudang = 0 then begin
+      SQL.Clear;
+      SQL.Text := 'SELECT a.*,CASE WHEN a.aktif=1 THEN '+QuotedStr('')+' ELSE '+QuotedStr('v')+' END AS pos FROM ' +
+                  '(SELECT 0 AS nogudang, '+QuotedStr('Gudang Utama')+' AS kodegudang, '+QuotedStr('Gudang Utama')+' AS namagudang, 1 AS aktif ' +
+                  'UNION ' +
+                  'SELECT nogudang,kodegudang,namagudang,aktif FROM tbl_gudang)AS a';
+    end else if statusgudang = 1 then begin
+      SQL.Clear;
+      SQL.Text := 'SELECT a.*,CASE WHEN a.aktif=1 THEN '+QuotedStr('')+' ELSE '+QuotedStr('v')+' END AS pos FROM ' +
+                  '(SELECT 0 AS nogudang, '+QuotedStr('Gudang Utama')+' AS kodegudang, '+QuotedStr('Gudang Utama')+' AS namagudang, 1 AS aktif ' +
+                  'UNION ' +
+                  'SELECT nogudang,kodegudang,namagudang,aktif FROM tbl_gudang)AS a where a.aktif=1';
+    end else if statusgudang = 2 then begin
+      SQL.Clear;
+      SQL.Text := 'SELECT a.*,CASE WHEN a.aktif=1 THEN '+QuotedStr('')+' ELSE '+QuotedStr('v')+' END AS pos FROM ' +
+                  '(SELECT 0 AS nogudang, '+QuotedStr('Gudang Utama')+' AS kodegudang, '+QuotedStr('Gudang Utama')+' AS namagudang, 1 AS aktif ' +
+                  'UNION ' +
+                  'SELECT nogudang,kodegudang,namagudang,aktif FROM tbl_gudang)AS a where a.aktif=0';
+    end;
+    Open;
+  end;
+end;
+
+procedure TFrm_DaftarGudang.FormShow(Sender: TObject);
+begin
+  statusgudang := 1;
+  RefreshQ;
+end;
+
+procedure TFrm_DaftarGudang.BtnFilterClick(Sender: TObject);
+begin
+  Application.CreateForm(TFGudang, FGudang);
+  FGudang.RBStatus.ItemIndex := statusgudang;
+  if FGudang.ShowModal = mrok then begin
+    statusgudang := FGudang.RBStatus.ItemIndex;
+    RefreshQ;
+  end;
+end;
+
+procedure TFrm_DaftarGudang.BtnBaruClick(Sender: TObject);
+begin
+  Application.CreateForm(TFrm_InputGudang, Frm_InputGudang);
+  with Frm_InputGudang do begin
+    ClearText;
+    if ShowModal = mrok then begin
+      with TZQuery.Create(Self)do begin
+        Connection := DM.con;
+        Close;
+        SQL.Text := 'insert into tbl_gudang values (:a,:b,:c,:d,:e,:f,:g,:h,:i,:j)';
+        ParamByName('a').Value := DM.GenerateNoMaster('gudang');
+        ParamByName('b').Value := txtkode.Text;
+        ParamByName('c').Value := txtnama.Text;
+        ParamByName('d').Value := txtalamat1.Text;
+        ParamByName('e').Value := txtalamat2.Text;
+        ParamByName('f').Value := txtkota.Text;
+        ParamByName('g').Value := txtkodepos.Text;
+        ParamByName('h').Value := txtnegara.Text;
+        ParamByName('i').Value := txtketerangan.Text;
+        if cbaktif.Checked = True then
+          ParamByName('j').Value := 0
+        else ParamByName('j').Value := 1;
+        ExecSQL;
+        Free;
+      end;
+      RefreshQ;
+    end;
+  end;
+end;
+
+procedure TFrm_DaftarGudang.BtnEditClick(Sender: TObject);
+begin
+  if QData.IsEmpty then Exit;
+  if QData.FieldValues['nogudang']=0 then begin
+    MessageDlg('Data gudang ini tidak boleh diedit!',mtError, [mbOK], 0);
+    Exit;
+  end;
+  Application.CreateForm(TFrm_InputGudang, Frm_InputGudang);
+  with TZQuery.Create(Self)do begin
+    Connection := DM.Con;
+    Close;
+    SQL.Text := 'select * from tbl_gudang where nogudang=:na';
+    ParamByName('na').Value := QData.FieldValues['nogudang'];
+    Open;
+    with Frm_InputGudang do begin
+      ClearText;
+      LID.Caption := FieldValues['nogudang'];
+      txtkode.Text := FieldValues['kodegudang'];
+      txtNama.Text := FieldValues['namagudang'];
+      txtalamat1.Text := FieldValues['alamat1gudang'];
+      txtalamat2.Text := FieldValues['alamat2gudang'];
+      txtkota.Text := FieldValues['kotagudang'];
+      txtkodepos.Text := FieldValues['kodeposgudang'];
+      txtnegara.Text := FieldValues['negaragudang'];
+      txtketerangan.Text := FieldValues['keterangan'];
+      if FieldValues['aktif'] = 1 then
+        cbaktif.Checked := False
+      else cbaktif.Checked := True;
+      if Frm_InputGudang.ShowModal = mrok then begin
+        Close;
+        SQL.Clear;
+        SQL.Text := 'update tbl_gudang set kodegudang=:a,namagudang=:b,alamat1gudang=:c,alamat2gudang=:d,kotagudang=:e,kodeposgudang=:f,negaragudang=:g, keterangan=:h, aktif=:i where nogudang=:na';
+        ParamByName('na').Value := LID.Caption;
+        ParamByName('a').Value := txtkode.Text;
+        ParamByName('b').Value := txtnama.Text;
+        ParamByName('c').Value := txtalamat1.Text;
+        ParamByName('d').Value := txtalamat2.Text;
+        ParamByName('e').Value := txtkota.Text;
+        ParamByName('f').Value := txtkodepos.Text;
+        ParamByName('g').Value := txtnegara.Text;
+        ParamByName('h').Value := txtketerangan.Text;
+        if cbaktif.Checked = True then
+          ParamByName('i').Value := 0
+        else ParamByName('i').Value := 1;
+        ExecSQL;
+        RefreshQ;
+      end;
+    end;
+    Free;
+  end;
+end;
+
+procedure TFrm_DaftarGudang.BtnHapusClick(Sender: TObject);
+begin
+  if QData.IsEmpty then Exit;
+  if DM.CekAkses(Frm_Main.txtuser.Caption,'Data10')=False then begin
+    MessageDlg('Anda tidak memiliki akses !',mtError,[mbOK],0);
+    Exit;
+  end;
+  if QData.FieldValues['nogudang']=0 then begin
+    MessageDlg('Data gudang ini tidak boleh dihapus!',mtError, [mbOK], 0);
+    Exit;
+  end;
+  with TZQuery.Create(Self)do begin
+    Connection := DM.Con;
+    Close;
+    SQL.Text := 'select * from tbl_bukubesarbarang where nogudang=:na';
+    ParamByName('na').Value := QData.FieldValues['nogudang'];
+    Open;
+    if IsEmpty then begin
+      Close;
+      SQL.Clear;
+      SQL.Text := 'delete from tbl_gudang where nogudang=:na';
+      ParamByName('na').Value := QData.FieldValues['nogudang'];
+      ExecSQL;
+    end else begin
+      MessageDlg('Data gudang tersebut telah digunakan dalam transaksi, tidak dapat dihapus!',mtError,[mbOK],0);
+      Exit;
+    end;
+    Free;
+    RefreshQ;
+  end;
+end;
+
+procedure TFrm_DaftarGudang.dbgdataDBTableView1DblClick(Sender: TObject);
+begin
+  BtnEditClick(nil);
+end;
+
+end.

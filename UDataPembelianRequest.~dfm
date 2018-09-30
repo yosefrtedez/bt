@@ -1,0 +1,184 @@
+object Frm_DataPembelianRequest: TFrm_DataPembelianRequest
+  Left = 842
+  Top = 35
+  Width = 455
+  Height = 638
+  BorderIcons = [biSystemMenu]
+  Caption = 'Data Permintaan Barang'
+  Color = clBtnFace
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -13
+  Font.Name = 'Calibri'
+  Font.Style = []
+  KeyPreview = True
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnKeyDown = FormKeyDown
+  PixelsPerInch = 96
+  TextHeight = 15
+  object RzPanel2: TRzPanel
+    Left = 0
+    Top = 0
+    Width = 439
+    Height = 25
+    Align = alTop
+    Alignment = taLeftJustify
+    BorderOuter = fsNone
+    Caption = 'Data Permintaan Barang'
+    Color = 16744448
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 0
+    object BtnUpdate: TRzToolButton
+      Left = 361
+      Top = 0
+      Width = 78
+      ImageIndex = 1
+      Images = DM.IL16
+      ShowCaption = True
+      UseToolbarShowCaption = False
+      Align = alRight
+      Caption = 'Update'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      OnClick = BtnUpdateClick
+    end
+  end
+  object RzPanel3: TRzPanel
+    Left = 0
+    Top = 558
+    Width = 439
+    Height = 41
+    Align = alBottom
+    BorderOuter = fsNone
+    TabOrder = 2
+    DesignSize = (
+      439
+      41)
+    object BtnOk: TRzBitBtn
+      Left = 359
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Ok'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = BtnOkClick
+    end
+    object BtnBatal: TRzBitBtn
+      Left = 279
+      Top = 8
+      Anchors = [akTop, akRight]
+      Caption = 'Batal'
+      Color = 12615680
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -13
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      OnClick = BtnBatalClick
+    end
+  end
+  object dbgdata: TcxGrid
+    Left = 0
+    Top = 25
+    Width = 439
+    Height = 533
+    Align = alClient
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 1
+    LookAndFeel.Kind = lfOffice11
+    LookAndFeel.NativeStyle = False
+    LookAndFeel.SkinName = 'Blue'
+    object dbgdataDBTableView1: TcxGridDBTableView
+      OnDblClick = dbgdataDBTableView1DblClick
+      NavigatorButtons.ConfirmDelete = False
+      DataController.DataSource = DSData
+      DataController.Summary.DefaultGroupSummaryItems = <>
+      DataController.Summary.FooterSummaryItems = <>
+      DataController.Summary.SummaryGroups = <>
+      FilterRow.Visible = True
+      OptionsData.CancelOnExit = False
+      OptionsData.Deleting = False
+      OptionsData.DeletingConfirmation = False
+      OptionsData.Editing = False
+      OptionsData.Inserting = False
+      OptionsSelection.CellSelect = False
+      OptionsView.ColumnAutoWidth = True
+      OptionsView.GridLines = glHorizontal
+      object dbgdataDBTableView1tgldibuat: TcxGridDBColumn
+        Caption = 'Tanggal'
+        DataBinding.FieldName = 'tglpembelianrequest'
+        Width = 85
+      end
+      object dbgdataDBTableView1kodepembelianrequest: TcxGridDBColumn
+        Caption = 'Referensi'
+        DataBinding.FieldName = 'kodepembelianrequest'
+        Width = 104
+      end
+      object dbgdataDBTableView1keperluan: TcxGridDBColumn
+        Caption = 'Catatan'
+        DataBinding.FieldName = 'catatan'
+        Width = 248
+      end
+    end
+    object dbgdataLevel1: TcxGridLevel
+      GridView = dbgdataDBTableView1
+    end
+  end
+  object QData: TZQuery
+    Connection = DM.con
+    SQL.Strings = (
+      
+        'SELECT * FROM tbl_pembelianrequest WHERE selesai=0 ORDER BY tglp' +
+        'embelianrequest')
+    Params = <>
+    Left = 48
+    Top = 104
+    object QDatanopembelianrequest: TLargeintField
+      FieldName = 'nopembelianrequest'
+      Required = True
+    end
+    object QDatakodepembelianrequest: TStringField
+      FieldName = 'kodepembelianrequest'
+      Size = 15
+    end
+    object QDatanamauser: TStringField
+      FieldName = 'namauser'
+      Size = 50
+    end
+    object QDatatglpembelianrequest: TDateField
+      FieldName = 'tglpembelianrequest'
+      DisplayFormat = 'dd MMM yyyy'
+    end
+    object QDataselesai: TSmallintField
+      FieldName = 'selesai'
+    end
+  end
+  object DSData: TDataSource
+    DataSet = QData
+    Left = 48
+    Top = 136
+  end
+end
